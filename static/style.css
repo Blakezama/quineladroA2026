@@ -1,0 +1,159 @@
+/* Reset básico */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #006b3f; /* Verde estilo cancha */
+    color: white;
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+header h1 { margin: 0; font-size: 1.5rem; }
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 1.5rem;
+    font-weight: 500;
+}
+nav a:hover { text-decoration: underline; }
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    color: #222;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+
+/* --- MENSAJES FLASH --- */
+.mensajes {
+    list-style: none;
+    margin-bottom: 1.5rem;
+}
+.mensajes li {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.mensajes .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.mensajes .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+/* --- LISTA DE PARTIDOS --- */
+.lista-partidos {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.tarjeta-partido {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.info-partido { display: flex; flex-direction: column; font-size: 0.9rem; color: #666; }
+.info-partido .fase { font-weight: bold; color: #006b3f; margin-bottom: 0.2rem; }
+
+.equipos {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+.equipos .vs { font-size: 1rem; color: #999; font-weight: normal; }
+
+.btn-primario, .btn-exito {
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    color: white;
+    display: inline-block;
+    transition: background-color 0.2s;
+}
+
+.btn-primario { background-color: #007bff; }
+.btn-primario:hover { background-color: #0056b3; }
+.btn-exito { background-color: #28a745; width: 100%; font-size: 1.1rem; }
+.btn-exito:hover { background-color: #218838; }
+
+/* --- FORMULARIOS --- */
+.formulario {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.grupo-input { margin-bottom: 1.5rem; }
+.grupo-input label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #444; }
+.grupo-input input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.encabezado-apuesta { text-align: center; margin-bottom: 2rem; }
+
+.marcadores-inputs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.caja-marcador { display: flex; flex-direction: column; align-items: center; }
+.caja-marcador label { font-weight: bold; margin-bottom: 0.5rem; }
+.caja-marcador input {
+    width: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.separador { font-size: 1.5rem; font-weight: bold; color: #777; }
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    color: #888;
+    margin-top: 3rem;
+}

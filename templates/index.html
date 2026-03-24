@@ -1,0 +1,132 @@
+
+{% extends "base.html" %}
+
+{% block title %}Inicio - Quiniela Mundial 2026{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 2rem;">
+    <h1>Próximos Partidos</h1>
+</div>
+
+<div class="filters-bar-wrapper">
+    <div class="filters-bar" id="group-filters">
+        <!-- Generamos un botón por cada grupo del A al L -->
+        {% for group_letter in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] %}
+        <button class="filter-btn" data-group="{{ group_letter }}">{{ group_letter }}</button>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="match-list" id="match-list">
+    <!-- JS renderizado aquí -->
+</div>
+
+<!-- Inyección de Datos Segura para el Linter -->
+<script id="data-matches" type="application/json">{{ partidos | tojson | safe }}</script>
+<script id="data-countries" type="application/json">{{ country_codes | tojson | safe }}</script>
+<script id="data-players" type="application/json">{{ jugadores_mock | tojson | safe }}</script>
+<script id="data-auth" type="application/json">{{ 'true' if usuario_actual else 'false' }}</script>
+
+<!-- Lógica de Frontend Reactivo -->
+<script>
+    // 1. Integración de Datos (Parseados desde bloques JSON para evitar errores de lint)
+    const MATCHES_DATA = JSON.parse(document.getElementById('data-matches').textContent);
+    const COUNTRY_CODES = JSON.parse(document.getElementById('data-countries').textContent);
+    const PLAYERS_MOCK = JSON.parse(document.getElementById('data-players').textContent);
+    const IS_AUTHENTICATED = JSON.parse(document.getElementById('data-auth').textContent);
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        // 2. Estado global de filtros
+        let gruposSeleccionados = [];
+        const matchContainer = document.getElementById('match-list');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Función principal de renderizado
+        function renderMatches() {
+            // A. Filtrado Reactivo
+            const matchesToRender = MATCHES_DATA.filter(partido => {
+                return gruposSeleccionados.length === 0 || gruposSeleccionados.includes(partido.grupo);
+            });
+            
+            // B. Estructura de Datos y Ordenamiento Cronológico (ISO 8601)
+            matchesToRender.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+            
+            if (matchesToRender.length === 0) {
+                matchContainer.innerHTML = `
+                    <div class="card glass-card" style="text-align: center;">
+                        <p>No hay partidos programados para estos filtros.</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            matchesToRender.forEach((partido, index) => {
+                // Formateador de Fecha amigable JS Vanilla
+                const d = new Date(partido.fecha);
+                const fechaStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                
+                const renderTeam = (teamName) => {
+                    const code = COUNTRY_CODES[teamName];
+                    const flag = code ? `<img src="https://flagcdn.com/w80/${code}.png" alt="Bandera ${teamName}" class="flag-icon">` : '';
+                    let playersHtml = '';
+                    
+                    const players = PLAYERS_MOCK[teamName] || [];
+                    if (players.length > 0) {
+                        playersHtml += '<div class="avatars-row">';
+                        players.forEach(p => {
+                            playersHtml += `
+                            <div class="player-avatar-container">
+                                <div class="player-avatar">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.nombre)}&background=random" alt="${p.nombre}" class="player-img">
+                                    <div class="player-info">
+                                        <span class="player-name">${p.nombre}</span>
+                                        <span class="player-pos">${p.pos}</span>
+                                    </div>
+                                </div>
+                            </div>`;
+                        });
+                        playersHtml += '</div>';
+                    }
+                    return `${flag} <span>${teamName}</span> ${playersHtml}`;
+                };
+
+                html += `
+                <div class="match-card" style="animation-delay: ${index * 0.1}s">
+                    <div class="match-info">
+                        <span>Grupo ${partido.grupo || 'N/A'}</span>
+                        <span>${fechaStr}</span>
+                    </div>
+                    <div class="team">${renderTeam(partido.equipo_a)}</div>
+                    <div class="vs-badge">VS</div>
+                    <div class="team">${renderTeam(partido.equipo_b)}</div>
+                    <div class="match-actions">
+                        ${ IS_AUTHENTICATED 
+                            ? `<a href="/apostar/${partido.id}" class="btn btn-vibrant">Predecir Resultado ⚡</a>`
+                            : `<a href="/login" class="btn" style="background: rgba(255,255,255,0.05); color: var(--text-dim);">Inicia sesión para predecir 🔒</a>`
+                        }
+                    </div>
+                </div>`;
+            });
+            matchContainer.innerHTML = html;
+        }
+
+        // C. Interfaz de Filtros Minimalista (Click Handlers)
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.classList.toggle('active');
+                const g = btn.dataset.group;
+                
+                if (btn.classList.contains('active')) {
+                    if (!gruposSeleccionados.includes(g)) gruposSeleccionados.push(g);
+                } else {
+                    gruposSeleccionados = gruposSeleccionados.filter(item => item !== g);
+                }
+                renderMatches(); // Re-renderizar automáticamente al cambiar state
+            });
+        });
+
+        // Inicializar vista
+        renderMatches();
+    });
+</script>
+{% endblock %}

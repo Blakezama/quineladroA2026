@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión - Quiniela Mundial{% endblock %}
+
+{% block body_class %}login-page{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div class="card glass-card" style="width: 100%; max-width: 450px;">
+        <h1 style="text-align: center;">Iniciar Sesión</h1>
+        <p style="color: var(--text-dim); margin-bottom: 2.5rem; text-align: center;">Ingresa tu correo electrónico registrado para acceder.</p>
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="form-group">
+                <label for="email" style="color: #cbd5e1;">Correo Electrónico</label>
+                <input type="email" id="email" name="email" placeholder="tu@email.com" required style="background: rgba(15, 23, 42, 0.5); border-color: rgba(255, 255, 255, 0.2); color: white;">
+            </div>
+            <button type="submit" class="btn-vibrant" style="width: 100%; margin-top: 1rem;">Entrar al Estadio</button>
+        </form>
+
+        <p style="margin-top: 2rem; text-align: center; color: var(--text-dim);">
+            ¿No tienes cuenta? <a href="{{ url_for('registro') }}" style="color: var(--accent-color); font-weight: 600; text-decoration: none;">Regístrate aquí</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

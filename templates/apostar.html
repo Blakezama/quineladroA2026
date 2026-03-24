@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Predicción - {{ partido.equipo_a }} vs {{ partido.equipo_b }}{% endblock %}
+
+{% block content %}
+<div class="vote-card">
+    <!-- Header del Partido -->
+    <div class="vote-header">
+        <span class="fase-badge">{{ partido.fase }} · Grupo {{ partido.grupo }}</span>
+        <h1>{{ partido.equipo_a }} vs {{ partido.equipo_b }}</h1>
+        <p style="color: var(--text-dim); margin-top: 0.25rem;">{{ partido.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+    </div>
+
+    <!-- ===== VISTA DE VOTACIÓN ===== -->
+    <div id="voting-view" class="{% if ya_voto %}hidden-view{% endif %}">
+        <!-- 1. ¿Quién ganará? -->
+        <div class="vote-section">
+            <div class="vote-section-title">⚽ ¿Quién ganará?</div>
+            <div class="vote-options">
+                <div class="vote-option" data-category="ganador" data-value="A" onclick="selectVote(this)">
+                    {% if country_codes.get(partido.equipo_a) %}
+                    <img src="https://flagcdn.com/w80/{{ country_codes.get(partido.equipo_a) }}.png" alt="{{ partido.equipo_a }}" class="vote-flag">
+                    {% endif %}
+                    <span class="team-name">{{ partido.equipo_a }}</span>
+                </div>
+                <div class="vote-option" data-category="ganador" data-value="B" onclick="selectVote(this)">
+                    {% if country_codes.get(partido.equipo_b) %}
+                    <img src="https://flagcdn.com/w80/{{ country_codes.get(partido.equipo_b) }}.png" alt="{{ partido.equipo_b }}" class="vote-flag">
+                    {% endif %}
+                    <span class="team-name">{{ partido.equipo_b }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Primera Tarjeta Amarilla -->
+        <div class="vote-section">
+            <div class="vote-section-title">🟨 Primera Tarjeta Amarilla</div>
+            <div class="card-toggle">
+                <div class="card-toggle-btn" data-category="amarilla" data-value="A" onclick="selectVote(this)">
+                    🟨 {{ partido.equipo_a }}
+                </div>
+                <div class="card-toggle-btn" data-category="amarilla" data-value="B" onclick="selectVote(this)">
+                    🟨 {{ partido.equipo_b }}
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Primera Tarjeta Roja -->
+        <div class="vote-section">
+            <div class="vote-section-title">🟥 Primera Tarjeta Roja</div>
+            <div class="card-toggle">
+                <div class="card-toggle-btn" data-category="roja" data-value="A" onclick="selectVote(this)">
+                    🟥 {{ partido.equipo_a }}
+                </div>
+                <div class="card-toggle-btn" data-category="roja" data-value="B" onclick="selectVote(this)">
+                    🟥 {{ partido.equipo_b }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Botón de Envío -->
+        <div class="vote-submit">
+            <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="submitVote()">
+                Selecciona todas las opciones para votar
+            </button>
+        </div>
+    </div>
+
+    <!-- ===== VISTA DE RESULTADOS (MODIFICADA) ===== -->
+    <div id="results-view" class="{% if not ya_voto %}hidden-view{% endif %}">
+        <div style="text-align: center; margin: 4rem 0;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+            <h2 style="color: var(--success); margin-bottom: 1rem;">¡Tu predicción ha sido registrada con éxito!</h2>
+            <p style="color: var(--text-dim); margin-bottom: 2.5rem;">Ahora puedes ver cómo van las votaciones de todos los partidos en la sección general.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+                <a href="{{ url_for('mis_predicciones') }}" class="btn-vibrant" style="text-decoration: none; padding: 1rem 3rem; font-size: 1.1rem;">
+                    Ver Todas las Predicciones 📊
+                </a>
+                <a href="{{ url_for('inicio') }}" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem;">
+                    Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hidden-view { display: none !important; }
+</style>
+
+<!-- Datos JSON para JS -->
+<script id="data-partido" type="application/json">
+    {
+        "id": {{ partido_data.id }},
+        "yaVoto": {{ 'true' if ya_voto else 'false' }}
+    }
+</script>
+
+<script>
+    const DATA_VOTO = JSON.parse(document.getElementById('data-partido').textContent);
+    const PARTIDO_ID = DATA_VOTO.id;
+    const state = { ganador: null, amarilla: null, roja: null };
+
+    // Selección exclusiva por categoría
+    function selectVote(el) {
+        const cat = el.dataset.category;
+        const val = el.dataset.value;
+
+        // Deseleccionar hermanos de la misma categoría
+        document.querySelectorAll(`[data-category="${cat}"]`).forEach(s => s.classList.remove('selected'));
+        el.classList.add('selected');
+        state[cat] = val;
+
+        // Habilitar botón si todas las categorías están seleccionadas
+        const btn = document.getElementById('btn-submit-vote');
+        if (state.ganador && state.amarilla && state.roja) {
+            btn.disabled = false;
+            btn.textContent = 'Enviar Predicción ⚡';
+        }
+    }
+
+    // Función para limpiar alertas de voto previo
+    function clearHighlights() {
+        document.querySelectorAll('.my-vote-highlight').forEach(el => el.classList.remove('my-vote-highlight'));
+        document.querySelectorAll('.my-vote-badge').forEach(el => el.remove());
+    }
+
+    // Envío vía AJAX (fetch)
+    async function submitVote() {
+        const btn = document.getElementById('btn-submit-vote');
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        try {
+            const res = await fetch(`/api/votar/${PARTIDO_ID}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                showResults(data);
+            } else {
+                alert(data.error || 'Error desconocido');
+                btn.disabled = false;
+                btn.textContent = 'Enviar Predicción ⚡';
+            }
+        } catch (err) {
+            alert('Error de conexión. Intenta de nuevo.');
+            btn.disabled = false;
+            btn.textContent = 'Enviar Predicción ⚡';
+        }
+    }
+
+    // Transición a vista de resultados
+    function showResults(data) {
+        document.getElementById('voting-view').classList.add('hidden-view');
+        document.getElementById('results-view').classList.remove('hidden-view');
+        animateBars(data.porcentajes, data.mi_voto);
+    }
+
+    // Animar las barras de porcentaje y resaltar el voto del usuario
+    function animateBars(p, miVoto) {
+        clearHighlights();
+        const categories = ['ganador', 'amarilla', 'roja'];
+        
+        categories.forEach(cat => {
+            setTimeout(() => {
+                document.getElementById(`bar-${cat}-a`).style.width = p[cat].A + '%';
+                document.getElementById(`bar-${cat}-b`).style.width = p[cat].B + '%';
+                document.getElementById(`pct-${cat}-a`).textContent = p[cat].A + '%';
+                document.getElementById(`pct-${cat}-b`).textContent = p[cat].B + '%';
+                
+                // Resaltar lo que el usuario votó
+                if (miVoto && miVoto[cat]) {
+                    const optionSelected = miVoto[cat].toLowerCase(); // 'a' o 'b'
+                    const labelNode = document.getElementById(`pct-${cat}-${optionSelected}`).parentElement.querySelector('.result-label');
+                    
+                    if (labelNode) {
+                        labelNode.parentElement.classList.add('my-vote-highlight');
+                        labelNode.innerHTML += ` <span class="my-vote-badge">TU VOTO</span>`;
+                    }
+                }
+            }, 200);
+        });
+        document.getElementById('total-votos').textContent = `Total de votos: ${Math.max(p.total, 1)}`; // fallback visual en caso de delay backend
+    }
+
+    // Si el usuario ya votó, cargar resultados al inicio
+    document.addEventListener('DOMContentLoaded', () => {
+        if (DATA_VOTO.yaVoto) {
+            fetch(`/api/resultados/${PARTIDO_ID}`)
+                .then(r => r.json())
+                .then(data => animateBars(data.porcentajes, data.mi_voto));
+        }
+    });
+</script>
+{% endblock %}

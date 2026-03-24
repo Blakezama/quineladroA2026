@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Predicciones - Quiniela Mundial 2026{% endblock %}
+
+{% block content %}
+<div class="header-section" style="text-align: center; margin-bottom: 2rem;">
+    <h1>Estadísticas Globales de Predicciones</h1>
+    <p style="color: var(--text-dim);">Mira en qué están votando los demás fans sobre los próximos partidos.</p>
+</div>
+
+<div class="prediction-history" style="display: flex; flex-direction: column; gap: 2rem;">
+    {% for item in resumen %}
+    <div class="vote-card" style="max-width: 800px; margin: 0 auto; width: 100%;">
+        <div class="vote-header">
+            <span class="fase-badge">{{ item.info.fase }} - Grupo {{ item.info.grupo }}</span>
+            <h2>{{ item.info.equipo_a }} vs {{ item.info.equipo_b }}</h2>
+            <p style="font-size: 0.85rem; color: var(--text-dim);">{{ item.info.fecha.strftime('%d/%m/%Y %H:%M') if item.info.fecha.strftime else item.info.fecha }}</p>
+        </div>
+
+        {# GANADOR DEL PARTIDO #}
+        <div class="results-section">
+            <div class="results-section-title">⚽ GANADOR DEL PARTIDO</div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_a }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar" data-width="{{ item.stats.ganador.A }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.ganador.A }}%</div>
+            </div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_b }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" data-width="{{ item.stats.ganador.B }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.ganador.B }}%</div>
+            </div>
+        </div>
+
+        {# TARJETA AMARILLA #}
+        <div class="results-section">
+            <div class="results-section-title">🟨 PRIMERA TARJETA AMARILLA</div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_a }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar" data-width="{{ item.stats.amarilla.A }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.amarilla.A }}%</div>
+            </div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_b }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" data-width="{{ item.stats.amarilla.B }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.amarilla.B }}%</div>
+            </div>
+        </div>
+
+        {# TARJETA ROJA #}
+        <div class="results-section">
+            <div class="results-section-title">🟥 PRIMERA TARJETA ROJA</div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_a }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar" data-width="{{ item.stats.roja.A }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.roja.A }}%</div>
+            </div>
+            <div class="result-row">
+                <div class="result-label">{{ item.info.equipo_b }}</div>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" data-width="{{ item.stats.roja.B }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.roja.B }}%</div>
+            </div>
+        </div>
+
+        <div class="total-votes-badge">
+            Total de votos: {{ item.stats.total }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div style="text-align: center; margin-top: 3rem;">
+    <a href="{{ url_for('inicio') }}" class="btn btn-primary">Volver al Inicio</a>
+</div>
+
+<script>
+    // Aplicar los anchos de las barras dinámicamente para evitar errores de linter en CSS inline
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.result-bar').forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            if (width) {
+                bar.style.width = width + '%';
+            }
+        });
+    });
+</script>
+{% endblock %}
