@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Ranking Global | Quiniela Mundial 2026{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    /* Diseño Glassmorphism para Leaderboard */
+    .ranking-container {
+        max-width: 800px;
+        margin: 0 auto;
+        animation: fadeInUp 0.6s ease-out backwards;
+    }
+    
+    .ranking-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .ranking-header h1 {
+        font-size: 2.2rem;
+        color: var(--accent-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .glass-table-wrapper {
+        background: rgba(0, 77, 113, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .ranking-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .ranking-table th {
+        background: rgba(0, 54, 80, 0.7);
+        padding: 1.25rem 1.5rem;
+        color: var(--text-dim);
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid rgba(120, 222, 212, 0.3);
+    }
+
+    .ranking-table td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        vertical-align: middle;
+        font-size: 1.05rem;
+    }
+    
+    .ranking-table tr:hover {
+        background: rgba(120, 222, 212, 0.05);
+        transition: background 0.3s;
+    }
+    
+    .ranking-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Columnas Específicas */
+    .col-pos {
+        width: 15%;
+        text-align: center;
+        font-weight: 800;
+    }
+    
+    .col-user {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .col-puntos {
+        width: 25%;
+        text-align: right;
+        font-weight: 800;
+        color: var(--accent-color);
+        font-size: 1.2rem;
+    }
+
+    /* Avatares Circulares */
+    .user-avatar-lg {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Medallas FontAwesome */
+    .medal {
+        font-size: 1.8rem;
+    }
+    
+    .medal-gold { color: #FFD700; filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5)); }
+    .medal-silver { color: #C0C0C0; filter: drop-shadow(0 0 8px rgba(192, 192, 192, 0.5)); }
+    .medal-bronze { color: #CD7F32; filter: drop-shadow(0 0 8px rgba(205, 127, 50, 0.5)); }
+    
+    .pos-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        text-align: center;
+        border-radius: 8px;
+        color: var(--text-dim);
+    }
+    
+    /* Responsividad */
+    @media (max-width: 600px) {
+        .ranking-table th, .ranking-table td {
+            padding: 1rem;
+        }
+        .user-avatar-lg {
+            width: 36px;
+            height: 36px;
+        }
+        .col-user {
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+    }
+</style>
+
+<div class="ranking-container">
+    <div class="ranking-header">
+        <h1><i class="fa-solid fa-trophy"></i> Ranking Global</h1>
+        <p style="color: var(--text-dim);">Compite con otros usuarios adivinando los resultados.</p>
+    </div>
+
+    <div class="glass-table-wrapper">
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th class="col-pos">Posición</th>
+                    <th>Usuario</th>
+                    <th class="col-puntos">Puntos Totales</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if ranking_data %}
+                    {% for item in ranking_data %}
+                    <tr>
+                        <td class="col-pos">
+                            {% if item.posicion == 1 %}
+                                <i class="fa-solid fa-medal medal medal-gold" title="1er Lugar"></i>
+                            {% elif item.posicion == 2 %}
+                                <i class="fa-solid fa-medal medal medal-silver" title="2do Lugar"></i>
+                            {% elif item.posicion == 3 %}
+                                <i class="fa-solid fa-medal medal medal-bronze" title="3er Lugar"></i>
+                            {% else %}
+                                <span class="pos-badge">{{ item.posicion }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-user">
+                            {% if item.usuario.foto_perfil %}
+                                {% if item.usuario.foto_perfil[:4] == 'http' %}
+                                    <img class="user-avatar-lg" src="{{ item.usuario.foto_perfil }}" alt="{{ item.usuario.nombre }}">
+                                {% else %}
+                                    <img class="user-avatar-lg" src="{{ url_for('static', filename=item.usuario.foto_perfil) }}" alt="{{ item.usuario.nombre }}">
+                                {% endif %}
+                            {% else %}
+                                <img class="user-avatar-lg" src="https://ui-avatars.com/api/?name={{ item.usuario.nombre }}&background=random" alt="{{ item.usuario.nombre }}">
+                            {% endif %}
+                            <span>{{ item.usuario.nombre }}</span>
+                        </td>
+                        <td class="col-puntos">
+                            {{ item.puntos }} pts
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                        No hay usuarios para mostrar el ranking todavía.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

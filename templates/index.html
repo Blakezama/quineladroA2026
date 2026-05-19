@@ -1,27 +1,386 @@
-
 {% extends "base.html" %}
 
 {% block title %}Inicio - Quiniela Mundial 2026{% endblock %}
 
+{% block header_tabs %}
+<!-- Google Sports Tabs -->
+<div class="sports-tabs">
+    <div class="sports-tab active" data-target="tab-partidos">PARTIDOS</div>
+    <div class="sports-tab" data-target="tab-posiciones">POSICIONES</div>
+    <div class="sports-tab" data-target="tab-fase-final">FASE FINAL</div>
+</div>
+{% endblock %}
+
 {% block content %}
-<div style="text-align: center; margin-bottom: 2rem;">
-    <h1>Próximos Partidos</h1>
+<!-- ===================================== -->
+<!-- TAB: PARTIDOS -->
+<!-- ===================================== -->
+<div id="tab-partidos" class="tab-content active">
+    <div class="filters-bar-wrapper">
+        <div class="filters-bar" id="group-filters">
+            <!-- Generamos un botón por cada grupo del A al L -->
+            {% for group_letter in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] %}
+            <button class="filter-btn" data-group="{{ group_letter }}">{{ group_letter }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="match-list" id="match-list">
+        <!-- JS renderizado aquí dinámicamente con cabeceras de fecha -->
+    </div>
 </div>
 
-<div class="filters-bar-wrapper">
-    <div class="filters-bar" id="group-filters">
-        <!-- Generamos un botón por cada grupo del A al L -->
-        {% for group_letter in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'] %}
-        <button class="filter-btn" data-group="{{ group_letter }}">{{ group_letter }}</button>
+<!-- ===================================== -->
+<!-- TAB: POSICIONES -->
+<!-- ===================================== -->
+<div id="tab-posiciones" class="tab-content">
+    <div style="margin-bottom: 2rem; text-align: center;">
+        <p style="color: var(--text-dim);">Fase de grupos. Los dos primeros de cada grupo avanzan a Dieciseisavos.</p>
+    </div>
+
+    <div class="groups-grid">
+        {% for grupo_id, equipos in MUNDIAL_DATA.Grupos.items() %}
+        <div class="card glass-card" style="padding: 1.5rem;">
+            <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span style="background: var(--accent-color); color: var(--primary-bg); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 1rem;">GRUPO {{ grupo_id }}</span>
+            </h2>
+            <table class="standings-table">
+                <thead>
+                    <tr>
+                        <th>Pos</th>
+                        <th>Equipo</th>
+                        <th style="text-align: center;">PJ</th>
+                        <th style="text-align: center;">Pts</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for equipo in equipos %}
+                    <tr class="{{ 'qualify' if loop.index <= 2 else '' }}">
+                        <td>
+                            <div class="pos-badge">{{ loop.index }}</div>
+                        </td>
+                        <td>
+                            <div class="table-team">
+                                <img src="https://flagcdn.com/w40/{{ equipo.code }}.png" alt="{{ equipo.nombre }}" class="table-flag">
+                                <span>{{ equipo.nombre }}</span>
+                            </div>
+                        </td>
+                        <td style="text-align: center; font-weight: 500;">{{ equipo.pj }}</td>
+                        <td style="text-align: center; font-weight: 700; color: var(--accent-color);">{{ equipo.pts }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="margin-top: 1rem; font-size: 0.7rem; color: var(--text-dim); display: flex; align-items: center; gap: 0.4rem;">
+                <div style="width: 8px; height: 8px; border-radius: 2px; background: rgba(34, 197, 94, 0.4);"></div>
+                <span>Zona de Clasificación</span>
+            </div>
+        </div>
         {% endfor %}
     </div>
 </div>
 
-<div class="match-list" id="match-list">
-    <!-- JS renderizado aquí -->
+<!-- ===================================== -->
+<!-- TAB: FASE FINAL (KNOCKOUT BRACKET) -->
+<!-- ===================================== -->
+<style>
+    /* Estilos del Árbol de Eliminatorias */
+    .bracket-wrapper {
+        overflow-x: auto;
+        padding: 2rem 0;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-color) transparent;
+        border-radius: 12px;
+    }
+    .bracket-wrapper::-webkit-scrollbar { height: 6px; }
+    .bracket-wrapper::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
+
+    .bracket {
+        display: flex;
+        gap: 2rem;
+        min-width: max-content;
+        padding: 1rem 2rem;
+        align-items: flex-start;
+    }
+    .bracket-col-wrap {
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+    }
+    .bracket-column {
+        height: 1440px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 220px;
+        flex-shrink: 0;
+    }
+    .bracket-round-title {
+        text-align: center;
+        color: var(--accent-color);
+        font-weight: 800;
+        margin-bottom: 0.75rem;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: rgba(255,255,255,0.05);
+        padding: 0.5rem;
+        border-radius: 6px;
+        width: 220px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+    }
+    .bracket-match {
+        background: var(--primary-bg);
+        border: 2px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        width: 220px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+    .bracket-match:hover, 
+    .bracket-match.highlighted-match, 
+    .bracket-match.selected-match {
+        transform: scale(1.02);
+        border-color: var(--accent-color) !important;
+        box-shadow: 0 0 15px rgba(120, 222, 212, 0.4), inset 0 0 8px rgba(120, 222, 212, 0.1) !important;
+        z-index: 10;
+    }
+    
+    /* ===== CONECTORES DEL BRACKET (LLAVES PREMIUM) ===== */
+    .bracket-column {
+        height: 1440px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        width: 220px;
+        flex-shrink: 0;
+        position: relative;
+    }
+
+    /* Reset para los pseudoelementos */
+    .bracket-match::after, .bracket-match::before {
+        box-sizing: border-box;
+        transition: border-color 0.3s, filter 0.3s, box-shadow 0.3s;
+    }
+
+    /* El conector "codo" superior (partidos impares) */
+    .bracket-column .bracket-match:nth-child(odd):not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -1rem; /* Mitad exacta del gap de 2rem */
+        width: 1rem;
+        border-top: 2px solid rgba(120, 222, 212, 0.25);
+        border-right: 2px solid rgba(120, 222, 212, 0.25);
+        border-top-right-radius: 8px; /* Codo curvo premium */
+        z-index: -1;
+    }
+
+    /* El conector "codo" inferior (partidos pares) */
+    .bracket-column .bracket-match:nth-child(even)::after {
+        content: '';
+        position: absolute;
+        bottom: 50%;
+        right: -1rem; /* Mitad exacta del gap */
+        width: 1rem;
+        border-bottom: 2px solid rgba(120, 222, 212, 0.25);
+        border-right: 2px solid rgba(120, 222, 212, 0.25);
+        border-bottom-right-radius: 8px; /* Codo curvo premium */
+        z-index: -1;
+    }
+
+    /* Alturas dinámicas para los codos (mitad de la distancia exacta entre centros) */
+    #col-r32 .bracket-match::after { height: calc(1440px / 32); }
+    #col-octavos .bracket-match::after { height: calc(1440px / 16); }
+    #col-cuartos .bracket-match::after { height: calc(1440px / 8); }
+    #col-semis .bracket-match::after { height: calc(1440px / 4); }
+
+    /* Línea de entrada para los partidos de la siguiente ronda */
+    .bracket-col-wrap:not(:first-child) .bracket-match::before {
+        content: '';
+        position: absolute;
+        left: -1rem; /* Desde el centro del gap hasta el partido */
+        top: 50%;
+        width: 1rem;
+        border-bottom: 2px solid rgba(120, 222, 212, 0.25);
+        z-index: -1;
+    }
+
+    /* Limpiar conectores innecesarios en la final */
+    #col-final .bracket-match::after { display: none; }
+
+    /* Efecto hover premium para que las llaves "se iluminen" */
+    .bracket-match:hover::after,
+    .bracket-match:hover::before {
+        border-color: var(--accent-color);
+        filter: drop-shadow(0 0 4px rgba(120, 222, 212, 0.7));
+        z-index: 2;
+    }
+
+    .b-team {
+        padding: 0.6rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-dim);
+    }
+    .b-team.winner {
+        font-weight: 700;
+        color: #fff;
+    }
+    .b-team:first-child { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .b-team img {
+        width: 20px;
+        height: 15px;
+        margin-right: 0.5rem;
+        border-radius: 2px;
+        object-fit: cover;
+    }
+    .b-score { font-weight: 700; color: var(--text-main); }
+    .b-team.winner .b-score { color: var(--accent-color); }
+
+    /* ===== BRACKET NAV TABS ===== */
+    .bracket-nav {
+        display: flex;
+        gap: 0.1rem;
+        overflow-x: auto;
+        padding-bottom: 0;
+        scrollbar-width: none;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 1.25rem;
+    }
+    .bracket-nav::-webkit-scrollbar { display: none; }
+    .bracket-nav-btn {
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.88rem;
+        font-weight: 500;
+        padding: 0.6rem 1.1rem;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: color 0.2s, border-color 0.2s;
+        letter-spacing: 0.3px;
+        margin-bottom: -1px;
+    }
+    .bracket-nav-btn:hover {
+        color: rgba(255,255,255,0.85);
+    }
+    .bracket-nav-btn.active {
+        color: #fff;
+        font-weight: 700;
+        border-bottom-color: var(--accent-color);
+    }
+
+
+</style>
+
+<div id="tab-fase-final" class="tab-content">
+    <!-- Barra de navegación por ronda (estilo Google) -->
+    <nav class="bracket-nav" id="bracket-nav">
+        <button class="bracket-nav-btn active" onclick="scrollToBracketRound('col-r32', this)">Eliminatoria de 32</button>
+        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-octavos', this)">Octavos de final</button>
+        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-cuartos', this)">Cuartos de final</button>
+        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-semis', this)">Semifinales</button>
+        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-final', this)">Final</button>
+    </nav>
+
+    <div class="bracket-wrapper glass-card">
+        <div class="bracket">
+
+            <!-- ELIMINATORIA DE 32 -->
+            <div class="bracket-col-wrap">
+                <div class="bracket-round-title">Eliminatoria de 32</div>
+                <div class="bracket-column" id="col-r32">
+                    {% set grupos_r32 = [('A','I'),('B','J'),('C','K'),('D','L'),('E','A'),('F','B'),('G','C'),('H','D'),
+                                         ('I','E'),('J','F'),('K','G'),('L','H'),('A','C'),('B','D'),('E','G'),('F','H')] %}
+                    {% for par in grupos_r32 %}
+                    <div class="bracket-match">
+                        <div class="b-team">
+                            <div style="display:flex;align-items:center;">
+                                <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                1º Grupo {{ par[0] }}
+                            </div>
+                            <span class="b-score">-</span>
+                        </div>
+                        <div class="b-team">
+                            <div style="display:flex;align-items:center;">
+                                <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                2º Grupo {{ par[1] }}
+                            </div>
+                            <span class="b-score">-</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- OCTAVOS DE FINAL -->
+            <div class="bracket-col-wrap">
+                <div class="bracket-round-title">Octavos de Final</div>
+                <div class="bracket-column" id="col-octavos">
+                    {% for i in range(8) %}
+                    <div class="bracket-match">
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- CUARTOS DE FINAL -->
+            <div class="bracket-col-wrap">
+                <div class="bracket-round-title">Cuartos de Final</div>
+                <div class="bracket-column" id="col-cuartos">
+                    {% for i in range(4) %}
+                    <div class="bracket-match">
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- SEMIFINALES -->
+            <div class="bracket-col-wrap">
+                <div class="bracket-round-title">Semifinales</div>
+                <div class="bracket-column" id="col-semis">
+                    {% for i in range(2) %}
+                    <div class="bracket-match">
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- FINAL -->
+            <div class="bracket-col-wrap">
+                <div class="bracket-round-title" style="background: var(--accent-color); color: var(--primary-bg);">Gran Final</div>
+                <div class="bracket-column" id="col-final" style="justify-content:center;">
+                    <div class="bracket-match highlighted-match" style="border-width:2px;border-color:var(--accent-color);">
+                        <div class="b-team"><span>⚽ Finalista 1</span><span class="b-score">-</span></div>
+                        <div class="b-team"><span>⚽ Finalista 2</span><span class="b-score">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
+
 <!-- Inyección de Datos Segura para el Linter -->
+
 <script id="data-matches" type="application/json">{{ partidos | tojson | safe }}</script>
 <script id="data-countries" type="application/json">{{ country_codes | tojson | safe }}</script>
 <script id="data-players" type="application/json">{{ jugadores_mock | tojson | safe }}</script>
@@ -29,17 +388,44 @@
 
 <!-- Lógica de Frontend Reactivo -->
 <script>
-    // 1. Integración de Datos (Parseados desde bloques JSON para evitar errores de lint)
+    // 1. Integración de Datos
     const MATCHES_DATA = JSON.parse(document.getElementById('data-matches').textContent);
     const COUNTRY_CODES = JSON.parse(document.getElementById('data-countries').textContent);
     const PLAYERS_MOCK = JSON.parse(document.getElementById('data-players').textContent);
     const IS_AUTHENTICATED = JSON.parse(document.getElementById('data-auth').textContent);
     
     document.addEventListener('DOMContentLoaded', () => {
-        // 2. Estado global de filtros
+        
+        // --- LOGICA DE TABS ---
+        const tabs = document.querySelectorAll('.sports-tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Eliminar active de todas las pestañas y contenidos
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                // Activar pestaña clickeada y su contenido
+                tab.classList.add('active');
+                const targetId = tab.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // --- LOGICA DE PARTIDOS ---
         let gruposSeleccionados = [];
         const matchContainer = document.getElementById('match-list');
         const filterBtns = document.querySelectorAll('.filter-btn');
+
+        // Formateador de Fecha principal para los Headers
+        function getDateHeaderString(dateStr) {
+            const d = new Date(dateStr);
+            const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
+            // Capitalizar la primera letra
+            let header = d.toLocaleDateString('es-ES', opciones);
+            return header.charAt(0).toUpperCase() + header.slice(1);
+        }
 
         // Función principal de renderizado
         function renderMatches() {
@@ -60,16 +446,34 @@
             }
 
             let html = '';
+            let currentDateHeader = '';
+
             matchesToRender.forEach((partido, index) => {
-                // Formateador de Fecha amigable JS Vanilla
+                // Generación de Date Header
+                const dateHeader = getDateHeaderString(partido.fecha);
+
+                if (dateHeader !== currentDateHeader) {
+                    html += `<div class="date-header">${dateHeader}</div>`;
+                    currentDateHeader = dateHeader;
+                }
+
+                // Formateador de Fecha para la hora del partido
                 const d = new Date(partido.fecha);
-                const fechaStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+                const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
                 
-                const renderTeam = (teamName) => {
+                const renderTeam = (teamName, teamLetterCode) => {
                     const code = COUNTRY_CODES[teamName];
                     const flag = code ? `<img src="https://flagcdn.com/w80/${code}.png" alt="Bandera ${teamName}" class="flag-icon">` : '';
-                    let playersHtml = '';
                     
+                    let additionalIndicators = '';
+                    // Punto 3: Seguimiento dinámico de amarillas y rojas
+                    if (partido.estado === 'live') {
+                        if (partido.roja_real === teamLetterCode) {
+                            additionalIndicators += '<span style="background: #ef4444; color: white; padding: 2px 4px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; margin-left: 0.5rem; letter-spacing: 1px;">🟥 ROJA</span>';
+                        }
+                    }
+
+                    let playersHtml = '';
                     const players = PLAYERS_MOCK[teamName] || [];
                     if (players.length > 0) {
                         playersHtml += '<div class="avatars-row">';
@@ -87,22 +491,61 @@
                         });
                         playersHtml += '</div>';
                     }
-                    return `${flag} <span>${teamName}</span> ${playersHtml}`;
+                    return `${flag} <span style="display: flex; align-items: center;">${teamName} ${additionalIndicators}</span> ${playersHtml}`;
                 };
 
                 html += `
-                <div class="match-card" style="animation-delay: ${index * 0.1}s">
+                <div class="match-card" style="animation-delay: ${(index % 10) * 0.1}s">
                     <div class="match-info">
-                        <span>Grupo ${partido.grupo || 'N/A'}</span>
-                        <span>${fechaStr}</span>
+                        <span>Fase de grupos • Grupo ${partido.grupo || 'N/A'}</span>
+                        ${ partido.estado === 'live' 
+                            ? `<span style="color: var(--accent-color); font-weight: bold; display: flex; align-items: center; gap: 0.3rem;"><div style="width:6px; height:6px; border-radius:50%; background:var(--accent-color); animation: pulse 1.5s infinite;"></div> 2T 68'</span>` 
+                            : `<span>${timeStr}</span>`
+                        }
                     </div>
-                    <div class="team">${renderTeam(partido.equipo_a)}</div>
-                    <div class="vs-badge">VS</div>
-                    <div class="team">${renderTeam(partido.equipo_b)}</div>
-                    <div class="match-actions">
+                    <div class="team">${renderTeam(partido.equipo_a, 'A')}</div>
+                    ${ partido.estado === 'live' 
+                        ? `<div class="score-display live-pulse">
+                            <span class="score">${partido.goles_a !== null ? partido.goles_a : 0}</span>
+                            <span class="live-indicator">EN VIVO</span>
+                            <span class="score">${partido.goles_b !== null ? partido.goles_b : 0}</span>
+                           </div>`
+                        : (partido.estado === 'finished'
+                            ? `<div class="score-display finished">
+                                <span class="score">${partido.goles_a !== null ? partido.goles_a : 0}</span>
+                                <span class="ft-indicator">FT</span>
+                                <span class="score">${partido.goles_b !== null ? partido.goles_b : 0}</span>
+                               </div>`
+                            : `<div class="vs-badge">VS</div>`
+                        )
+                    }
+                    <div class="team">${renderTeam(partido.equipo_b, 'B')}</div>
+                    
+                    <!-- Punto 4: Barra de Probabilidades -->
+                    ${ partido.estado === 'scheduled' && partido.stats && partido.stats.total > 0
+                        ? `<div style="margin-top: 1.5rem; padding: 0 0.5rem;">
+                            <div style="font-size: 0.65rem; color: var(--text-dim); margin-bottom: 0.4rem; font-weight: 600; letter-spacing: 0.5px; display:flex; justify-content: space-between;">
+                                <span>PRONÓSTICO DE LA COMUNIDAD</span>
+                                <span>${partido.stats.total} votos totales</span>
+                            </div>
+                            <div style="display: flex; height: 6px; border-radius: 4px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
+                                <div style="width: ${partido.stats.ganador.A}%; background: var(--accent-color); transition: width 1s ease-out;" title="${partido.equipo_a}"></div>
+                                <div style="width: ${partido.stats.ganador.E}%; background: #64748b; transition: width 1s ease-out;" title="Empate"></div>
+                                <div style="width: ${partido.stats.ganador.B}%; background: #ef4444; transition: width 1s ease-out;" title="${partido.equipo_b}"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-top: 0.4rem;">
+                                <span style="color: var(--accent-color);">${partido.stats.ganador.A}%</span>
+                                <span style="color: #64748b;">${partido.stats.ganador.E}%</span>
+                                <span style="color: #ef4444;">${partido.stats.ganador.B}%</span>
+                            </div>
+                           </div>`
+                        : ''
+                    }
+
+                    <div class="match-actions" style="margin-top: 1.5rem;">
                         ${ IS_AUTHENTICATED 
-                            ? `<a href="/apostar/${partido.id}" class="btn btn-vibrant">Predecir Resultado ⚡</a>`
-                            : `<a href="/login" class="btn" style="background: rgba(255,255,255,0.05); color: var(--text-dim);">Inicia sesión para predecir 🔒</a>`
+                            ? `<a href="/apostar/${partido.id}" class="btn btn-vibrant" style="width: 100%;">Predecir Resultado ⚡</a>`
+                            : `<a href="/login" class="btn" style="width: 100%; background: rgba(255,255,255,0.05); color: var(--text-dim);">Inicia sesión para predecir 🔒</a>`
                         }
                     </div>
                 </div>`;
@@ -110,7 +553,7 @@
             matchContainer.innerHTML = html;
         }
 
-        // C. Interfaz de Filtros Minimalista (Click Handlers)
+        // C. Interfaz de Filtros Minimalista
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 btn.classList.toggle('active');
@@ -121,12 +564,120 @@
                 } else {
                     gruposSeleccionados = gruposSeleccionados.filter(item => item !== g);
                 }
-                renderMatches(); // Re-renderizar automáticamente al cambiar state
+                renderMatches(); 
             });
         });
 
         // Inicializar vista
         renderMatches();
+
+        // =====================================
+        // BRACKET NAV — SCROLL POR RONDA
+        // =====================================
+        window.scrollToBracketRound = function(columnId, btnEl) {
+            // Actualizar tab activo
+            document.querySelectorAll('.bracket-nav-btn').forEach(b => b.classList.remove('active'));
+            if (btnEl) btnEl.classList.add('active');
+
+            // Remover resaltado de todos los recuadros
+            document.querySelectorAll('.bracket-match').forEach(m => {
+                m.classList.remove('highlighted-match');
+            });
+
+            // Añadir resaltado a la columna seleccionada
+            const col = document.getElementById(columnId);
+            if (col) {
+                col.querySelectorAll('.bracket-match').forEach(m => {
+                    m.classList.add('highlighted-match');
+                });
+            }
+
+            // Scroll suave hacia la columna dentro del bracket-wrapper
+            const wrapper = document.querySelector('.bracket-wrapper');
+            if (col && wrapper) {
+                // Calcular offset relativo al contenedor scrollable
+                const wrapperLeft = wrapper.getBoundingClientRect().left;
+                const colLeft     = col.getBoundingClientRect().left;
+                const scrollOffset = wrapper.scrollLeft + (colLeft - wrapperLeft) - 16;
+                wrapper.scrollTo({ left: scrollOffset, behavior: 'smooth' });
+            }
+        };
+
+        // Resaltar individualmente los partidos al hacer clic (opcional para el usuario)
+        document.querySelectorAll('.bracket-match').forEach(match => {
+            match.addEventListener('click', () => {
+                match.classList.toggle('selected-match');
+            });
+        });
+        
+        // =====================================
+        // ACTUALIZACIONES EN TIEMPO REAL
+        // =====================================
+        function iniciarActualizacionesEnVivo() {
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/api/updates');
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const updates = await response.json();
+                    let cambioDetectado = false;
+                    
+                    updates.forEach(update => {
+                        const matchIndex = MATCHES_DATA.findIndex(m => m.id === update.id);
+                        if (matchIndex !== -1) {
+                            const match = MATCHES_DATA[matchIndex];
+                            if (match.goles_a !== update.goles_a || match.goles_b !== update.goles_b || match.estado !== update.estado) {
+                                match.goles_a = update.goles_a;
+                                match.goles_b = update.goles_b;
+                                match.estado = update.estado;
+                                cambioDetectado = true;
+                            }
+                        }
+                    });
+                    
+                    if (cambioDetectado) {
+                        /* Solo re-renderizamos si estamos en la pestaña Partidos
+                           para no interferir si el usuario está en otra vista */
+                        if (document.getElementById('tab-partidos').classList.contains('active')) {
+                            renderMatches(); 
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error obteniendo actualizaciones en vivo:", error);
+                }
+            }, 60000); // 60 segundos
+        }
+        iniciarActualizacionesEnVivo();
     });
 </script>
+
+<!-- ===================================== -->
+<!-- SECCIÓN PROMOCIONAL HORIZONTAL (HOME) -->
+<!-- ===================================== -->
+<section class="promo-banner-section" id="promo-section">
+    <div class="promo-banner-title">✦ Patrocinadores &amp; Promociones ✦</div>
+    <div class="promo-banner-grid">
+
+        <div class="promo-banner-card" title="Bono Bienvenida 100%">
+            <img src="{{ url_for('static', filename='img/ad_bono_bienvenida.png') }}" alt="Bono Bienvenida 100%">
+            <div class="promo-banner-card-caption">🎁 Bono Bienvenida 100%</div>
+        </div>
+
+        <div class="promo-banner-card" title="Descarga la App">
+            <img src="{{ url_for('static', filename='img/ad_descarga_app.png') }}" alt="Descarga la App">
+            <div class="promo-banner-card-caption">📱 Descarga la App</div>
+        </div>
+
+        <div class="promo-banner-card" title="Sorteo Final 2026">
+            <img src="{{ url_for('static', filename='img/ad_sorteo_final.png') }}" alt="Sorteo Final 2026">
+            <div class="promo-banner-card-caption">🎟️ Sorteo Final 2026</div>
+        </div>
+
+        <div class="promo-banner-card" title="Lidera el Ranking">
+            <img src="{{ url_for('static', filename='img/ad_ranking_promo.png') }}" alt="Lidera el Ranking">
+            <div class="promo-banner-card-caption">🏆 Lidera el Ranking</div>
+        </div>
+
+    </div>
+</section>
+
 {% endblock %}

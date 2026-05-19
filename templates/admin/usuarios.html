@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios - Admin{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h1 style="margin: 0;">👥 Gestión de Usuarios</h1>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary" style="background: transparent; color: var(--accent-color); border: 1px solid var(--accent-color);">Volver al Dashboard</a>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="standings-table" style="width: 100%;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u.id }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <img src="{{ u.foto_perfil if u.foto_perfil[:4] == 'http' else url_for('static', filename=u.foto_perfil) }}" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">
+                            {{ u.nombre }}
+                        </div>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        {% if u.is_admin %}
+                        <span style="background: rgba(120, 222, 212, 0.2); color: var(--accent-color); padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.75rem; font-weight: bold;">ADMIN</span>
+                        {% else %}
+                        <span style="color: var(--text-dim); font-size: 0.85rem;">Usuario</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('hacer_admin', user_id=u.id) }}" style="display: inline;">
+                            {% if u.is_admin %}
+                            <button type="submit" class="btn" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Quitar Admin</button>
+                            {% else %}
+                            <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Hacer Admin</button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

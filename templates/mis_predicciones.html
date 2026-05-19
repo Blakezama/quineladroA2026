@@ -28,6 +28,13 @@
                 <div class="result-percentage">{{ item.stats.ganador.A }}%</div>
             </div>
             <div class="result-row">
+                <div class="result-label">Empate</div>
+                <div class="result-bar-container">
+                    <div class="result-bar" style="background-color: var(--text-dim);" data-width="{{ item.stats.ganador.E }}"></div>
+                </div>
+                <div class="result-percentage">{{ item.stats.ganador.E }}%</div>
+            </div>
+            <div class="result-row">
                 <div class="result-label">{{ item.info.equipo_b }}</div>
                 <div class="result-bar-container">
                     <div class="result-bar bar-b" data-width="{{ item.stats.ganador.B }}"></div>

@@ -13,26 +13,57 @@
 
     <!-- ===== VISTA DE VOTACIÓN ===== -->
     <div id="voting-view" class="{% if ya_voto %}hidden-view{% endif %}">
-        <!-- 1. ¿Quién ganará? -->
+        <!-- 1. ¿Quién ganará? (Automático basado en Resultado Exacto) -->
         <div class="vote-section">
             <div class="vote-section-title">⚽ ¿Quién ganará?</div>
-            <div class="vote-options">
-                <div class="vote-option" data-category="ganador" data-value="A" onclick="selectVote(this)">
+            <div class="vote-options" style="grid-template-columns: repeat(3, 1fr);">
+                <div class="vote-option selected" id="box-ganador-A" data-category="ganador" data-value="A" style="pointer-events: none; opacity: 0.5;">
                     {% if country_codes.get(partido.equipo_a) %}
                     <img src="https://flagcdn.com/w80/{{ country_codes.get(partido.equipo_a) }}.png" alt="{{ partido.equipo_a }}" class="vote-flag">
                     {% endif %}
                     <span class="team-name">{{ partido.equipo_a }}</span>
                 </div>
-                <div class="vote-option" data-category="ganador" data-value="B" onclick="selectVote(this)">
+                <div class="vote-option selected" id="box-ganador-E" data-category="ganador" data-value="E" style="pointer-events: none; display: flex; align-items: center; justify-content: center;">
+                    <span class="team-name" style="font-weight: bold; color: var(--text-dim);">Empate</span>
+                </div>
+                <div class="vote-option selected" id="box-ganador-B" data-category="ganador" data-value="B" style="pointer-events: none; opacity: 0.5;">
                     {% if country_codes.get(partido.equipo_b) %}
                     <img src="https://flagcdn.com/w80/{{ country_codes.get(partido.equipo_b) }}.png" alt="{{ partido.equipo_b }}" class="vote-flag">
                     {% endif %}
                     <span class="team-name">{{ partido.equipo_b }}</span>
                 </div>
             </div>
+            <p style="text-align: center; font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">El ganador se calcula automáticamente según tu resultado exacto.</p>
         </div>
 
-        <!-- 2. Primera Tarjeta Amarilla -->
+        <!-- 2. Resultado Exacto -->
+        <div class="vote-section">
+            <div class="vote-section-title">🔢 Resultado Exacto</div>
+            <div class="score-input-container" style="display: flex; justify-content: center; gap: 2rem; align-items: center; margin-top: 1rem;">
+                <!-- Equipo A Score -->
+                <div class="score-team">
+                    <span class="team-name" style="display: block; text-align: center; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.9rem;">{{ partido.equipo_a }}</span>
+                    <div class="number-input">
+                        <button type="button" onclick="updateScore('a', -1)">-</button>
+                        <input type="number" id="input-goles-a" min="0" value="0" readonly>
+                        <button type="button" onclick="updateScore('a', 1)">+</button>
+                    </div>
+                </div>
+                <!-- vs -->
+                <div style="font-weight: bold; color: var(--text-dim);">VS</div>
+                <!-- Equipo B Score -->
+                <div class="score-team">
+                    <span class="team-name" style="display: block; text-align: center; margin-bottom: 0.5rem; color: var(--text-dim); font-size: 0.9rem;">{{ partido.equipo_b }}</span>
+                    <div class="number-input">
+                        <button type="button" onclick="updateScore('b', -1)">-</button>
+                        <input type="number" id="input-goles-b" min="0" value="0" readonly>
+                        <button type="button" onclick="updateScore('b', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Primera Tarjeta Amarilla -->
         <div class="vote-section">
             <div class="vote-section-title">🟨 Primera Tarjeta Amarilla</div>
             <div class="card-toggle">
@@ -45,7 +76,7 @@
             </div>
         </div>
 
-        <!-- 3. Primera Tarjeta Roja -->
+        <!-- 4. Primera Tarjeta Roja -->
         <div class="vote-section">
             <div class="vote-section-title">🟥 Primera Tarjeta Roja</div>
             <div class="card-toggle">
@@ -60,9 +91,20 @@
 
         <!-- Botón de Envío -->
         <div class="vote-submit">
-            <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="submitVote()">
+            <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="openConfirmModal()">
                 Selecciona todas las opciones para votar
             </button>
+        </div>
+
+        <!-- Reglas de Puntuación -->
+        <div class="rules-panel" style="margin-top: 2rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+            <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem;">📋 Reglas de Puntuación</h3>
+            <ul style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+                <li><strong>Acierto de Ganador:</strong> 3 Puntos</li>
+                <li><strong>Marcador Exacto:</strong> +5 Puntos adicionales (Total 8)</li>
+                <li><strong>Primera Amarilla Correcta:</strong> 2 Puntos</li>
+                <li><strong>Primera Roja Correcta:</strong> 7 Puntos</li>
+            </ul>
         </div>
     </div>
 
@@ -85,26 +127,247 @@
     </div>
 </div>
 
+<!-- ===== MODAL DE CONFIRMACIÓN ===== -->
+<div id="confirm-modal-overlay" class="confirm-overlay" onclick="closeConfirmModal()">
+    <div class="confirm-card" onclick="event.stopPropagation()">
+        <div class="confirm-icon">⚠️</div>
+        <h2 class="confirm-title">¿Estás seguro de tu predicción?</h2>
+        <p class="confirm-subtitle">Revisa tu selección antes de confirmar. <strong>No podrás cambiarla.</strong></p>
+
+        <div class="confirm-summary">
+            <!-- Ganador -->
+            <div class="confirm-row">
+                <span class="confirm-label">🏆 Ganador</span>
+                <div class="confirm-value" id="cm-ganador">
+                    <img id="cm-flag" src="" alt="" class="cm-flag">
+                    <span id="cm-equipo-nombre"></span>
+                </div>
+            </div>
+            <!-- Resultado exacto -->
+            <div class="confirm-row">
+                <span class="confirm-label">🔢 Resultado</span>
+                <div class="confirm-value">
+                    <span id="cm-resultado" class="cm-score"></span>
+                </div>
+            </div>
+            <!-- Amarilla -->
+            <div class="confirm-row">
+                <span class="confirm-label">🟨 1ª Amarilla</span>
+                <div class="confirm-value">
+                    <span id="cm-amarilla"></span>
+                </div>
+            </div>
+            <!-- Roja -->
+            <div class="confirm-row">
+                <span class="confirm-label">🟥 1ª Roja</span>
+                <div class="confirm-value">
+                    <span id="cm-roja"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="confirm-actions">
+            <button class="confirm-btn-cancel" onclick="closeConfirmModal()">Cancelar</button>
+            <button class="confirm-btn-ok" id="cm-btn-confirmar" onclick="confirmVote()">
+                ✅ Confirmar y Votar
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
     .hidden-view { display: none !important; }
+    
+    /* Input numérico dark mode */
+    .number-input { display: flex; align-items: center; background: rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
+    .number-input button { background: rgba(255, 255, 255, 0.05); border: none; color: white; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
+    .number-input button:hover { background: var(--primary); color: #000; }
+    .number-input input { width: 50px; height: 45px; background: transparent; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: bold; -moz-appearance: textfield; appearance: textfield; }
+    .number-input input::-webkit-outer-spin-button, .number-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; appearance: none; }
+    .score-team { display: flex; flex-direction: column; align-items: center; }
+
+    /* ===== MODAL DE CONFIRMACIÓN ===== */
+    .confirm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+    }
+    .confirm-overlay.active {
+        display: flex;
+        animation: fadeInOverlay 0.2s ease;
+    }
+    @keyframes fadeInOverlay {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+    .confirm-card {
+        background: #1a1f2e;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 2rem 2rem 1.75rem;
+        width: 100%;
+        max-width: 440px;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+        animation: slideUp 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes slideUp {
+        from { transform: translateY(30px) scale(0.93); opacity: 0; }
+        to   { transform: translateY(0)    scale(1);    opacity: 1; }
+    }
+    .confirm-icon { font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem; }
+    .confirm-title {
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0 0 0.4rem;
+    }
+    .confirm-subtitle {
+        text-align: center;
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.45);
+        margin: 0 0 1.5rem;
+    }
+    .confirm-summary {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    .confirm-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-label {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.5);
+        white-space: nowrap;
+        margin-right: 1rem;
+    }
+    .confirm-value {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #fff;
+    }
+    .cm-flag {
+        width: 36px;
+        height: auto;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .cm-score {
+        font-size: 1.3rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: var(--primary, #00c9a7);
+    }
+    .confirm-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .confirm-btn-cancel {
+        flex: 1;
+        padding: 0.85rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.06);
+        color: rgba(255,255,255,0.7);
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .confirm-btn-cancel:hover { background: rgba(255,255,255,0.12); }
+    .confirm-btn-ok {
+        flex: 1.4;
+        padding: 0.85rem;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #00c9a7, #007cf0);
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+    .confirm-btn-ok:hover  { opacity: 0.9; transform: translateY(-1px); }
+    .confirm-btn-ok:active { opacity: 1;   transform: translateY(0);    }
+    .confirm-btn-ok:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    @media (max-width: 480px) {
+        .confirm-card { padding: 1.5rem 1.25rem; }
+        .confirm-actions { flex-direction: column; }
+    }
 </style>
 
 <!-- Datos JSON para JS -->
 <script id="data-partido" type="application/json">
     {
         "id": {{ partido_data.id }},
-        "yaVoto": {{ 'true' if ya_voto else 'false' }}
+        "yaVoto": {{ 'true' if ya_voto else 'false' }},
+        "equipoA": "{{ partido.equipo_a }}",
+        "equipoB": "{{ partido.equipo_b }}",
+        "flagA": "{{ country_codes.get(partido.equipo_a, '') }}",
+        "flagB": "{{ country_codes.get(partido.equipo_b, '') }}"
     }
 </script>
 
 <script>
     const DATA_VOTO = JSON.parse(document.getElementById('data-partido').textContent);
     const PARTIDO_ID = DATA_VOTO.id;
-    const state = { ganador: null, amarilla: null, roja: null };
+    // Por defecto 0-0 es Empate
+    const state = { ganador: 'E', amarilla: null, roja: null, goles_a: 0, goles_b: 0 };
 
-    // Selección exclusiva por categoría
+    function updateScore(team, delta) {
+        const inputId = `input-goles-${team}`;
+        const input = document.getElementById(inputId);
+        let val = parseInt(input.value) + delta;
+        if (val < 0) val = 0;
+        input.value = val;
+        state[`goles_${team}`] = val;
+        
+        // Autocalcular ganador
+        const diff = state.goles_a - state.goles_b;
+        let newWinner = 'E';
+        if (diff > 0) newWinner = 'A';
+        else if (diff < 0) newWinner = 'B';
+        
+        state.ganador = newWinner;
+        
+        // Actualizar visualización
+        document.querySelectorAll('[data-category="ganador"]').forEach(s => {
+            s.classList.remove('selected');
+            s.style.opacity = '0.5';
+        });
+        const winningBox = document.getElementById(`box-ganador-${newWinner}`);
+        if(winningBox) {
+            winningBox.classList.add('selected');
+            winningBox.style.opacity = '1';
+        }
+        
+        checkSubmit();
+    }
+
+    // Selección exclusiva por categoría (ahora solo para tarjetas)
     function selectVote(el) {
         const cat = el.dataset.category;
+        if (cat === 'ganador') return; // No se puede seleccionar manualmente
+        
         const val = el.dataset.value;
 
         // Deseleccionar hermanos de la misma categoría
@@ -112,13 +375,78 @@
         el.classList.add('selected');
         state[cat] = val;
 
-        // Habilitar botón si todas las categorías están seleccionadas
+        checkSubmit();
+    }
+    
+    function checkSubmit() {
         const btn = document.getElementById('btn-submit-vote');
         if (state.ganador && state.amarilla && state.roja) {
             btn.disabled = false;
             btn.textContent = 'Enviar Predicción ⚡';
         }
     }
+
+    // ============ MODAL DE CONFIRMACIÓN ============
+    const EQUIPO_A   = DATA_VOTO.equipoA;
+    const EQUIPO_B   = DATA_VOTO.equipoB;
+    const FLAG_A     = DATA_VOTO.flagA;
+    const FLAG_B     = DATA_VOTO.flagB;
+
+    function _teamName(val) {
+        if (val === 'A') return EQUIPO_A;
+        if (val === 'B') return EQUIPO_B;
+        return 'Empate';
+    }
+    function _flagCode(val) {
+        if (val === 'A') return FLAG_A;
+        if (val === 'B') return FLAG_B;
+        return '';
+    }
+
+    function openConfirmModal() {
+        // Poblar datos en el modal
+        const flagCode = _flagCode(state.ganador);
+        const flagEl   = document.getElementById('cm-flag');
+        const nombreEl = document.getElementById('cm-equipo-nombre');
+
+        if (state.ganador === 'E') {
+            flagEl.style.display = 'none';
+            nombreEl.textContent = '🤝 Empate';
+        } else {
+            flagEl.style.display = 'inline-block';
+            flagEl.src = `https://flagcdn.com/w80/${flagCode}.png`;
+            flagEl.alt = _teamName(state.ganador);
+            nombreEl.textContent = _teamName(state.ganador);
+        }
+
+        document.getElementById('cm-resultado').textContent =
+            `${EQUIPO_A}  ${state.goles_a} – ${state.goles_b}  ${EQUIPO_B}`;
+        document.getElementById('cm-amarilla').textContent = _teamName(state.amarilla);
+        document.getElementById('cm-roja').textContent     = _teamName(state.roja);
+
+        // Resetear botón de confirmar (por si se abrió antes)
+        const btnOk = document.getElementById('cm-btn-confirmar');
+        btnOk.disabled = false;
+        btnOk.textContent = '✅ Confirmar y Votar';
+
+        // Mostrar overlay
+        document.getElementById('confirm-modal-overlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirm-modal-overlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    function confirmVote() {
+        const btnOk = document.getElementById('cm-btn-confirmar');
+        btnOk.disabled = true;
+        btnOk.textContent = 'Enviando...';
+        closeConfirmModal();
+        submitVote();
+    }
+    // ============ FIN MODAL ============
 
     // Función para limpiar alertas de voto previo
     function clearHighlights() {
@@ -169,10 +497,16 @@
         
         categories.forEach(cat => {
             setTimeout(() => {
-                document.getElementById(`bar-${cat}-a`).style.width = p[cat].A + '%';
-                document.getElementById(`bar-${cat}-b`).style.width = p[cat].B + '%';
-                document.getElementById(`pct-${cat}-a`).textContent = p[cat].A + '%';
-                document.getElementById(`pct-${cat}-b`).textContent = p[cat].B + '%';
+                if (document.getElementById(`bar-${cat}-a`)) document.getElementById(`bar-${cat}-a`).style.width = p[cat].A + '%';
+                if (document.getElementById(`bar-${cat}-b`)) document.getElementById(`bar-${cat}-b`).style.width = p[cat].B + '%';
+                if (document.getElementById(`pct-${cat}-a`)) document.getElementById(`pct-${cat}-a`).textContent = p[cat].A + '%';
+                if (document.getElementById(`pct-${cat}-b`)) document.getElementById(`pct-${cat}-b`).textContent = p[cat].B + '%';
+                
+                // Mostrar empate si existe
+                if (cat === 'ganador' && p[cat].E !== undefined) {
+                    if (document.getElementById(`bar-ganador-e`)) document.getElementById(`bar-ganador-e`).style.width = p[cat].E + '%';
+                    if (document.getElementById(`pct-ganador-e`)) document.getElementById(`pct-ganador-e`).textContent = p[cat].E + '%';
+                }
                 
                 // Resaltar lo que el usuario votó
                 if (miVoto && miVoto[cat]) {

@@ -6,3 +6,6 @@ instance/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Variables de entorno
+.env
