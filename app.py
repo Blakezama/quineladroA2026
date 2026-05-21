@@ -39,76 +39,76 @@ scheduler.start()
 MUNDIAL_DATA = {
     'Grupos': {
         'A': [
-            {'nombre': 'México', 'code': 'mx', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Santiago Giménez', 'pos': 'Delantero'}, {'nombre': 'Edson Álvarez', 'pos': 'Mediocampista'}, {'nombre': 'Guillermo Ochoa', 'pos': 'Portero'}]},
-            {'nombre': 'Sudáfrica', 'code': 'za', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Percy Tau', 'pos': 'Delantero'}, {'nombre': 'Ronwen Williams', 'pos': 'Portero'}, {'nombre': 'Teboho Mokoena', 'pos': 'Mediocampista'}]},
-            {'nombre': 'Corea del Sur', 'code': 'kr', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Son Heung-min', 'pos': 'Delantero'}, {'nombre': 'Kim Min-jae', 'pos': 'Defensa'}, {'nombre': 'Lee Kang-in', 'pos': 'Mediocampista'}]},
-            {'nombre': 'Chequia', 'code': 'cz', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Patrik Schick', 'pos': 'Delantero'}, {'nombre': 'Tomáš Souček', 'pos': 'Mediocampista'}]}
+            {'nombre': 'México', 'code': 'mx', 'pj': 0, 'pts': 0},
+            {'nombre': 'Sudáfrica', 'code': 'za', 'pj': 0, 'pts': 0},
+            {'nombre': 'Corea del Sur', 'code': 'kr', 'pj': 0, 'pts': 0},
+            {'nombre': 'Chequia', 'code': 'cz', 'pj': 0, 'pts': 0}
         ],
         'B': [
-            {'nombre': 'Canadá', 'code': 'ca', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Alphonso Davies', 'pos': 'Defensa'}, {'nombre': 'Jonathan David', 'pos': 'Delantero'}, {'nombre': 'Stephen Eustáquio', 'pos': 'Mediocampista'}]},
-            {'nombre': 'Bosnia y Herzegovina', 'code': 'ba', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Edin Džeko', 'pos': 'Delantero'}, {'nombre': 'Miralem Pjanić', 'pos': 'Mediocampista'}]},
-            {'nombre': 'Catar', 'code': 'qa', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Suiza', 'code': 'ch', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Canadá', 'code': 'ca', 'pj': 0, 'pts': 0},
+            {'nombre': 'Bosnia y Herzegovina', 'code': 'ba', 'pj': 0, 'pts': 0},
+            {'nombre': 'Catar', 'code': 'qa', 'pj': 0, 'pts': 0},
+            {'nombre': 'Suiza', 'code': 'ch', 'pj': 0, 'pts': 0}
         ],
         'C': [
-            {'nombre': 'Brasil', 'code': 'br', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Marruecos', 'code': 'ma', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Haití', 'code': 'ht', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Escocia', 'code': 'gb-sct', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Brasil', 'code': 'br', 'pj': 0, 'pts': 0},
+            {'nombre': 'Marruecos', 'code': 'ma', 'pj': 0, 'pts': 0},
+            {'nombre': 'Haití', 'code': 'ht', 'pj': 0, 'pts': 0},
+            {'nombre': 'Escocia', 'code': 'gb-sct', 'pj': 0, 'pts': 0}
         ],
         'D': [
-            {'nombre': 'Estados Unidos', 'code': 'us', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Christian Pulisic', 'pos': 'Delantero'}, {'nombre': 'Weston McKennie', 'pos': 'Mediocampista'}, {'nombre': 'Tyler Adams', 'pos': 'Mediocampista'}]},
-            {'nombre': 'Paraguay', 'code': 'py', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Miguel Almirón', 'pos': 'Mediocampista'}, {'nombre': 'Julio Enciso', 'pos': 'Delantero'}, {'nombre': 'Gustavo Gómez', 'pos': 'Defensa'}]},
-            {'nombre': 'Australia', 'code': 'au', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Turquía', 'code': 'tr', 'pj': 0, 'pts': 0, 'jugadores': [{'nombre': 'Hakan Çalhanoğlu', 'pos': 'Mediocampista'}, {'nombre': 'Arda Güler', 'pos': 'Mediocampista'}]}
+            {'nombre': 'Estados Unidos', 'code': 'us', 'pj': 0, 'pts': 0},
+            {'nombre': 'Paraguay', 'code': 'py', 'pj': 0, 'pts': 0},
+            {'nombre': 'Australia', 'code': 'au', 'pj': 0, 'pts': 0},
+            {'nombre': 'Turquía', 'code': 'tr', 'pj': 0, 'pts': 0}
         ],
         'E': [
-            {'nombre': 'Alemania', 'code': 'de', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Ecuador', 'code': 'ec', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Costa de Marfil', 'code': 'ci', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Curazao', 'code': 'cw', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Alemania', 'code': 'de', 'pj': 0, 'pts': 0},
+            {'nombre': 'Ecuador', 'code': 'ec', 'pj': 0, 'pts': 0},
+            {'nombre': 'Costa de Marfil', 'code': 'ci', 'pj': 0, 'pts': 0},
+            {'nombre': 'Curazao', 'code': 'cw', 'pj': 0, 'pts': 0}
         ],
         'F': [
-            {'nombre': 'Países Bajos', 'code': 'nl', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Japón', 'code': 'jp', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Suecia', 'code': 'se', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Túnez', 'code': 'tn', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Países Bajos', 'code': 'nl', 'pj': 0, 'pts': 0},
+            {'nombre': 'Japón', 'code': 'jp', 'pj': 0, 'pts': 0},
+            {'nombre': 'Suecia', 'code': 'se', 'pj': 0, 'pts': 0},
+            {'nombre': 'Túnez', 'code': 'tn', 'pj': 0, 'pts': 0}
         ],
         'G': [
-            {'nombre': 'Bélgica', 'code': 'be', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Egipto', 'code': 'eg', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Irán', 'code': 'ir', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Nueva Zelanda', 'code': 'nz', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Bélgica', 'code': 'be', 'pj': 0, 'pts': 0},
+            {'nombre': 'Egipto', 'code': 'eg', 'pj': 0, 'pts': 0},
+            {'nombre': 'Irán', 'code': 'ir', 'pj': 0, 'pts': 0},
+            {'nombre': 'Nueva Zelanda', 'code': 'nz', 'pj': 0, 'pts': 0}
         ],
         'H': [
-            {'nombre': 'España', 'code': 'es', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Cabo Verde', 'code': 'cv', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Arabia Saudita', 'code': 'sa', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Uruguay', 'code': 'uy', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'España', 'code': 'es', 'pj': 0, 'pts': 0},
+            {'nombre': 'Cabo Verde', 'code': 'cv', 'pj': 0, 'pts': 0},
+            {'nombre': 'Arabia Saudita', 'code': 'sa', 'pj': 0, 'pts': 0},
+            {'nombre': 'Uruguay', 'code': 'uy', 'pj': 0, 'pts': 0}
         ],
         'I': [
-            {'nombre': 'Francia', 'code': 'fr', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Senegal', 'code': 'sn', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Irak', 'code': 'iq', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Noruega', 'code': 'no', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Francia', 'code': 'fr', 'pj': 0, 'pts': 0},
+            {'nombre': 'Senegal', 'code': 'sn', 'pj': 0, 'pts': 0},
+            {'nombre': 'Irak', 'code': 'iq', 'pj': 0, 'pts': 0},
+            {'nombre': 'Noruega', 'code': 'no', 'pj': 0, 'pts': 0}
         ],
         'J': [
-            {'nombre': 'Argentina', 'code': 'ar', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Argelia', 'code': 'dz', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Austria', 'code': 'at', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Jordania', 'code': 'jo', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Argentina', 'code': 'ar', 'pj': 0, 'pts': 0},
+            {'nombre': 'Argelia', 'code': 'dz', 'pj': 0, 'pts': 0},
+            {'nombre': 'Austria', 'code': 'at', 'pj': 0, 'pts': 0},
+            {'nombre': 'Jordania', 'code': 'jo', 'pj': 0, 'pts': 0}
         ],
         'K': [
-            {'nombre': 'Portugal', 'code': 'pt', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'RD Congo', 'code': 'cd', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Uzbekistán', 'code': 'uz', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Colombia', 'code': 'co', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Portugal', 'code': 'pt', 'pj': 0, 'pts': 0},
+            {'nombre': 'RD Congo', 'code': 'cd', 'pj': 0, 'pts': 0},
+            {'nombre': 'Uzbekistán', 'code': 'uz', 'pj': 0, 'pts': 0},
+            {'nombre': 'Colombia', 'code': 'co', 'pj': 0, 'pts': 0}
         ],
         'L': [
-            {'nombre': 'Inglaterra', 'code': 'gb-eng', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Croacia', 'code': 'hr', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Ghana', 'code': 'gh', 'pj': 0, 'pts': 0, 'jugadores': []},
-            {'nombre': 'Panamá', 'code': 'pa', 'pj': 0, 'pts': 0, 'jugadores': []}
+            {'nombre': 'Inglaterra', 'code': 'gb-eng', 'pj': 0, 'pts': 0},
+            {'nombre': 'Croacia', 'code': 'hr', 'pj': 0, 'pts': 0},
+            {'nombre': 'Ghana', 'code': 'gh', 'pj': 0, 'pts': 0},
+            {'nombre': 'Panamá', 'code': 'pa', 'pj': 0, 'pts': 0}
         ]
     }
 }
@@ -227,15 +227,13 @@ def inject_user_and_date():
         ahora = datetime.now().strftime("%d-%m-%Y %H:%M")
     
     # Mapeo de banderas consolidado en MUNDIAL_DATA para evitar redundancia
-    # Extraemos country_codes y jugadores de la estructura central
+    # Extraemos country_codes de la estructura central
     country_codes = {}
-    jugadores_mock = {}
     for grupo_id, equipos in MUNDIAL_DATA['Grupos'].items():
         for eq in equipos:
             country_codes[eq['nombre']] = eq['code']
-            jugadores_mock[eq['nombre']] = eq['jugadores']
         
-    return dict(usuario_actual=usuario_actual, fecha_actual=ahora, country_codes=country_codes, jugadores_mock=jugadores_mock, MUNDIAL_DATA=MUNDIAL_DATA)
+    return dict(usuario_actual=usuario_actual, fecha_actual=ahora, country_codes=country_codes, MUNDIAL_DATA=MUNDIAL_DATA)
 
 # ==========================================
 # 3. DECORADORES Y UTILIDADES DE SEGURIDAD

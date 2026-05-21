@@ -16,6 +16,9 @@
 <!-- TAB: PARTIDOS -->
 <!-- ===================================== -->
 <div id="tab-partidos" class="tab-content active">
+    <div style="text-align: center; font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.2em; margin-top: 1rem; margin-bottom: -0.5rem; opacity: 0.8;">
+        ✦ Grupos ✦
+    </div>
     <div class="filters-bar-wrapper">
         <div class="filters-bar" id="group-filters">
             <!-- Generamos un botón por cada grupo del A al L -->
@@ -383,7 +386,6 @@
 
 <script id="data-matches" type="application/json">{{ partidos | tojson | safe }}</script>
 <script id="data-countries" type="application/json">{{ country_codes | tojson | safe }}</script>
-<script id="data-players" type="application/json">{{ jugadores_mock | tojson | safe }}</script>
 <script id="data-auth" type="application/json">{{ 'true' if usuario_actual else 'false' }}</script>
 
 <!-- Lógica de Frontend Reactivo -->
@@ -391,7 +393,6 @@
     // 1. Integración de Datos
     const MATCHES_DATA = JSON.parse(document.getElementById('data-matches').textContent);
     const COUNTRY_CODES = JSON.parse(document.getElementById('data-countries').textContent);
-    const PLAYERS_MOCK = JSON.parse(document.getElementById('data-players').textContent);
     const IS_AUTHENTICATED = JSON.parse(document.getElementById('data-auth').textContent);
     
     document.addEventListener('DOMContentLoaded', () => {
@@ -473,25 +474,7 @@
                         }
                     }
 
-                    let playersHtml = '';
-                    const players = PLAYERS_MOCK[teamName] || [];
-                    if (players.length > 0) {
-                        playersHtml += '<div class="avatars-row">';
-                        players.forEach(p => {
-                            playersHtml += `
-                            <div class="player-avatar-container">
-                                <div class="player-avatar">
-                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.nombre)}&background=random" alt="${p.nombre}" class="player-img">
-                                    <div class="player-info">
-                                        <span class="player-name">${p.nombre}</span>
-                                        <span class="player-pos">${p.pos}</span>
-                                    </div>
-                                </div>
-                            </div>`;
-                        });
-                        playersHtml += '</div>';
-                    }
-                    return `${flag} <span style="display: flex; align-items: center;">${teamName} ${additionalIndicators}</span> ${playersHtml}`;
+                    return `${flag} <span style="display: flex; align-items: center;">${teamName} ${additionalIndicators}</span>`;
                 };
 
                 html += `
