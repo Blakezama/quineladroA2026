@@ -14,7 +14,8 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'mi_secreto_super_seguro_para_mvp')  # Necesario para sesiones y flash messages
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mundial.db'
+# Usar base de datos externa en producción (ej. Postgres) y SQLite en local
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mundial.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
 app.config['UPLOAD_FOLDER'] = 'static/uploads/perfiles'
@@ -30,8 +31,11 @@ db = SQLAlchemy(app)
 # ==========================================
 # CONFIGURACIÓN DEL SCHEDULER (ACTUALIZACIONES AUTOMÁTICAS)
 # ==========================================
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+
 scheduler = BackgroundScheduler()
-scheduler.start()
+if not IS_VERCEL:
+    scheduler.start()
 
 # ==========================================
 # 0. ARQUITECTURA DE DATOS (DATA-DRIVEN)
@@ -762,8 +766,9 @@ def actualizar_marcadores():
         except Exception as e:
             print(f"Error al actualizar marcadores desde la API: {e}")
 
-# Ejecutar actualización cada 10 minutos
-scheduler.add_job(func=actualizar_marcadores, trigger="interval", minutes=10, id='actualizar_marcadores_job')
+# Ejecutar actualización cada 10 minutos si no estamos en Vercel
+if not IS_VERCEL:
+    scheduler.add_job(func=actualizar_marcadores, trigger="interval", minutes=10, id='actualizar_marcadores_job')
 
 @app.route('/api/updates')
 def api_updates_live():
