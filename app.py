@@ -12,7 +12,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 load_dotenv()
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static'))
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'mi_secreto_super_seguro_para_mvp')  # Necesario para sesiones y flash messages
 # Usar base de datos externa en producción (ej. Postgres) y SQLite en local
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mundial.db')
