@@ -89,8 +89,11 @@
             </div>
         </div>
 
-        <!-- Botón de Envío -->
-        <div class="vote-submit">
+        <!-- Botón de Envío y Puntaje Potencial -->
+        <div class="vote-submit" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+            <div id="potential-points-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 0.6rem 1.25rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: all 0.3s; margin-bottom: 0.5rem;">
+                🏆 Puntaje en juego: 8 / 17 pts
+            </div>
             <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="openConfirmModal()">
                 Selecciona todas las opciones para votar
             </button>
@@ -108,21 +111,114 @@
         </div>
     </div>
 
-    <!-- ===== VISTA DE RESULTADOS (MODIFICADA) ===== -->
+    <!-- ===== VISTA DE RESULTADOS ===== -->
     <div id="results-view" class="{% if not ya_voto %}hidden-view{% endif %}">
-        <div style="text-align: center; margin: 4rem 0;">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
-            <h2 style="color: var(--success); margin-bottom: 1rem;">¡Tu predicción ha sido registrada con éxito!</h2>
-            <p style="color: var(--text-dim); margin-bottom: 2.5rem;">Ahora puedes ver cómo van las votaciones de todos los partidos en la sección general.</p>
-            
-            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
-                <a href="{{ url_for('mis_predicciones') }}" class="btn-vibrant" style="text-decoration: none; padding: 1rem 3rem; font-size: 1.1rem;">
-                    Ver Todas las Predicciones 📊
-                </a>
-                <a href="{{ url_for('inicio') }}" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem;">
-                    Volver al Inicio
-                </a>
+
+        <!-- Encabezado de éxito -->
+        <div class="result-success-header">
+            <div class="result-success-icon">✅</div>
+            <h2 class="result-success-title">¡Predicción registrada!</h2>
+            <p class="result-success-sub">No puedes modificarla. Aquí tienes tu resumen y cómo va la votación.</p>
+        </div>
+
+        <!-- ── Tu predicción ── -->
+        <div class="result-section-title">📋 Tu Predicción</div>
+        <div class="my-prediction-grid">
+            <div class="my-pred-card">
+                <span class="my-pred-label">🏆 Ganador</span>
+                <div class="my-pred-value" id="my-ganador-display">—</div>
             </div>
+            <div class="my-pred-card">
+                <span class="my-pred-label">🔢 Resultado</span>
+                <div class="my-pred-value my-pred-score" id="my-score-display">—</div>
+            </div>
+            <div class="my-pred-card">
+                <span class="my-pred-label">🟨 1ª Amarilla</span>
+                <div class="my-pred-value" id="my-amarilla-display">—</div>
+            </div>
+            <div class="my-pred-card">
+                <span class="my-pred-label">🟥 1ª Roja</span>
+                <div class="my-pred-value" id="my-roja-display">—</div>
+            </div>
+        </div>
+
+        <!-- ── Votación global ── -->
+        <div class="result-section-title" style="margin-top:2rem;">📊 Votación Global</div>
+
+        <!-- Ganador -->
+        <div class="result-block">
+            <div class="result-block-header">🏆 ¿Quién ganará?</div>
+            <div class="result-row" id="row-ganador-a">
+                <span class="result-label" id="lbl-ganador-a">{{ partido.equipo_a }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar" id="bar-ganador-a" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-ganador-a">0%</span>
+            </div>
+            <div class="result-row" id="row-ganador-e">
+                <span class="result-label" id="lbl-ganador-e">Empate</span>
+                <div class="result-bar-container">
+                    <div class="result-bar" id="bar-ganador-e" style="width:0%; background: linear-gradient(135deg,#6b7280,#9ca3af);"></div>
+                </div>
+                <span class="result-percentage" id="pct-ganador-e">0%</span>
+            </div>
+            <div class="result-row" id="row-ganador-b">
+                <span class="result-label" id="lbl-ganador-b">{{ partido.equipo_b }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" id="bar-ganador-b" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-ganador-b">0%</span>
+            </div>
+        </div>
+
+        <!-- Amarilla -->
+        <div class="result-block">
+            <div class="result-block-header">🟨 Primera Tarjeta Amarilla</div>
+            <div class="result-row" id="row-amarilla-a">
+                <span class="result-label" id="lbl-amarilla-a">{{ partido.equipo_a }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar" id="bar-amarilla-a" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-amarilla-a">0%</span>
+            </div>
+            <div class="result-row" id="row-amarilla-b">
+                <span class="result-label" id="lbl-amarilla-b">{{ partido.equipo_b }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" id="bar-amarilla-b" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-amarilla-b">0%</span>
+            </div>
+        </div>
+
+        <!-- Roja -->
+        <div class="result-block">
+            <div class="result-block-header">🟥 Primera Tarjeta Roja</div>
+            <div class="result-row" id="row-roja-a">
+                <span class="result-label" id="lbl-roja-a">{{ partido.equipo_a }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar" id="bar-roja-a" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-roja-a">0%</span>
+            </div>
+            <div class="result-row" id="row-roja-b">
+                <span class="result-label" id="lbl-roja-b">{{ partido.equipo_b }}</span>
+                <div class="result-bar-container">
+                    <div class="result-bar bar-b" id="bar-roja-b" style="width:0%"></div>
+                </div>
+                <span class="result-percentage" id="pct-roja-b">0%</span>
+            </div>
+        </div>
+
+        <div class="total-votes-badge" id="total-votos">—</div>
+
+        <!-- Navegación -->
+        <div style="display:flex; flex-direction:column; gap:1rem; align-items:center; margin-top:2rem;">
+            <a href="{{ url_for('mis_predicciones') }}" class="btn-vibrant" style="text-decoration:none; padding:0.9rem 2.5rem;">
+                Ver Todas las Predicciones 📊
+            </a>
+            <a href="{{ url_for('inicio') }}" style="color:var(--text-dim); text-decoration:none; font-size:0.9rem;">
+                Volver al Inicio
+            </a>
         </div>
     </div>
 </div>
@@ -175,13 +271,51 @@
     </div>
 </div>
 
+<!-- ===== TOAST NOTIFICATION ===== -->
+<div id="toast-container" class="toast-container"></div>
+
 <style>
+    /* ===== TOAST NOTIFICATIONS ===== */
+    .toast-container {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .toast {
+        background: rgba(15, 23, 42, 0.95);
+        border-left: 4px solid var(--accent-color);
+        color: #fff;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        min-width: 280px;
+        transform: translateX(120%);
+        opacity: 0;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    }
+    .toast.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    .toast.error {
+        border-left-color: #ef4444;
+    }
+    .toast-icon { font-size: 1.25rem; }
+
     .hidden-view { display: none !important; }
     
     /* Input numérico dark mode */
     .number-input { display: flex; align-items: center; background: rgba(255, 255, 255, 0.05); border-radius: 8px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.1); }
-    .number-input button { background: rgba(255, 255, 255, 0.05); border: none; color: white; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer; transition: 0.2s; }
-    .number-input button:hover { background: var(--primary); color: #000; }
+    .number-input button { background: rgba(255, 255, 255, 0.05); border: none; color: white; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer; transition: all 0.15s ease; }
+    .number-input button:hover { background: var(--primary); color: #000; transform: scale(1.05); }
+    .number-input button:active { transform: scale(0.95); background: var(--accent-color); }
     .number-input input { width: 50px; height: 45px; background: transparent; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: bold; -moz-appearance: textfield; appearance: textfield; }
     .number-input input::-webkit-outer-spin-button, .number-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; appearance: none; }
     .score-team { display: flex; flex-direction: column; align-items: center; }
@@ -313,6 +447,105 @@
         .confirm-card { padding: 1.5rem 1.25rem; }
         .confirm-actions { flex-direction: column; }
     }
+
+    /* ===== VISTA DE RESULTADOS PREMIUM ===== */
+    .result-success-header {
+        text-align: center;
+        padding: 1.5rem 0 1rem;
+    }
+    .result-success-icon { font-size: 3rem; margin-bottom: 0.5rem; }
+    .result-success-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--success);
+        margin: 0 0 0.4rem;
+    }
+    .result-success-sub {
+        font-size: 0.88rem;
+        color: var(--text-dim);
+        margin: 0;
+    }
+
+    .result-section-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin: 1.75rem 0 0.75rem;
+    }
+
+    /* Grid de la predicción del usuario */
+    .my-prediction-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+    .my-pred-card {
+        background: rgba(120, 222, 212, 0.06);
+        border: 1px solid rgba(120, 222, 212, 0.2);
+        border-radius: 12px;
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+    .my-pred-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+    .my-pred-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--accent-color);
+    }
+    .my-pred-score {
+        font-size: 1.15rem;
+        letter-spacing: 2px;
+    }
+
+    /* Bloques de votación global */
+    .result-block {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.85rem;
+    }
+    .result-block-header {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Resaltado de "TU VOTO" en las barras */
+    .result-row.my-vote-highlight {
+        background: rgba(120, 222, 212, 0.07);
+        border-radius: 8px;
+        padding: 0.2rem 0.4rem;
+        margin: 0 -0.4rem;
+    }
+    .my-vote-badge {
+        font-size: 0.6rem;
+        background: var(--accent-color);
+        color: #002;
+        padding: 0.1rem 0.35rem;
+        border-radius: 10px;
+        margin-left: 0.4rem;
+        vertical-align: middle;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    @media (max-width: 480px) {
+        .my-prediction-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 <!-- Datos JSON para JS -->
@@ -378,8 +611,46 @@
         checkSubmit();
     }
     
+    function showToast(msg, isError = false) {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${isError ? 'error' : ''}`;
+        toast.innerHTML = `<span class="toast-icon">${isError ? '❌' : 'ℹ️'}</span> <span>${msg}</span>`;
+        container.appendChild(toast);
+        
+        void toast.offsetWidth; // Reflow
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
     function checkSubmit() {
         const btn = document.getElementById('btn-submit-vote');
+        let points = 8; // Marcador base: 3 ganador + 5 exacto = 8 pts
+        
+        if (state.amarilla) points += 2;
+        if (state.roja) points += 7;
+        
+        const badge = document.getElementById('potential-points-badge');
+        if (badge) {
+            badge.textContent = `🏆 Puntaje en juego: ${points} / 17 pts`;
+            if (points === 17) {
+                badge.style.background = 'rgba(120, 222, 212, 0.1)';
+                badge.style.borderColor = 'var(--accent-color)';
+                badge.style.color = 'var(--accent-color)';
+                badge.style.boxShadow = '0 0 15px rgba(120, 222, 212, 0.3)';
+            } else {
+                badge.style.background = 'rgba(255, 255, 255, 0.05)';
+                badge.style.borderColor = 'rgba(255,255,255,0.1)';
+                badge.style.color = 'var(--text-dim)';
+                badge.style.boxShadow = 'none';
+            }
+        }
+
         if (state.ganador && state.amarilla && state.roja) {
             btn.disabled = false;
             btn.textContent = 'Enviar Predicción ⚡';
@@ -472,12 +743,12 @@
             if (data.success) {
                 showResults(data);
             } else {
-                alert(data.error || 'Error desconocido');
+                showToast(data.error || 'Error desconocido', true);
                 btn.disabled = false;
                 btn.textContent = 'Enviar Predicción ⚡';
             }
         } catch (err) {
-            alert('Error de conexión. Intenta de nuevo.');
+            showToast('Error de conexión. Intenta de nuevo.', true);
             btn.disabled = false;
             btn.textContent = 'Enviar Predicción ⚡';
         }
@@ -490,37 +761,49 @@
         animateBars(data.porcentajes, data.mi_voto);
     }
 
-    // Animar las barras de porcentaje y resaltar el voto del usuario
+    // Animar las barras de porcentaje y rellenar tarjetas de predicción propia
     function animateBars(p, miVoto) {
         clearHighlights();
+
+        // ── Poblar tarjetas "Tu Predicción" ──
+        if (miVoto) {
+            const teamName = v => v === 'A' ? EQUIPO_A : v === 'B' ? EQUIPO_B : 'Empate';
+            document.getElementById('my-ganador-display').textContent  = teamName(miVoto.ganador);
+            document.getElementById('my-amarilla-display').textContent = teamName(miVoto.amarilla);
+            document.getElementById('my-roja-display').textContent     = teamName(miVoto.roja);
+            const ga = miVoto.goles_a ?? '?', gb = miVoto.goles_b ?? '?';
+            document.getElementById('my-score-display').textContent = `${ga} – ${gb}`;
+        }
+
+        // ── Animar barras de % ──
         const categories = ['ganador', 'amarilla', 'roja'];
-        
         categories.forEach(cat => {
             setTimeout(() => {
-                if (document.getElementById(`bar-${cat}-a`)) document.getElementById(`bar-${cat}-a`).style.width = p[cat].A + '%';
-                if (document.getElementById(`bar-${cat}-b`)) document.getElementById(`bar-${cat}-b`).style.width = p[cat].B + '%';
-                if (document.getElementById(`pct-${cat}-a`)) document.getElementById(`pct-${cat}-a`).textContent = p[cat].A + '%';
-                if (document.getElementById(`pct-${cat}-b`)) document.getElementById(`pct-${cat}-b`).textContent = p[cat].B + '%';
-                
-                // Mostrar empate si existe
-                if (cat === 'ganador' && p[cat].E !== undefined) {
-                    if (document.getElementById(`bar-ganador-e`)) document.getElementById(`bar-ganador-e`).style.width = p[cat].E + '%';
-                    if (document.getElementById(`pct-ganador-e`)) document.getElementById(`pct-ganador-e`).textContent = p[cat].E + '%';
-                }
-                
-                // Resaltar lo que el usuario votó
+                ['a','b','e'].forEach(side => {
+                    const barEl = document.getElementById(`bar-${cat}-${side}`);
+                    const pctEl = document.getElementById(`pct-${cat}-${side}`);
+                    const val   = p[cat] ? (p[cat][side.toUpperCase()] ?? 0) : 0;
+                    if (barEl) barEl.style.width = val + '%';
+                    if (pctEl) pctEl.textContent = val + '%';
+                });
+
+                // Resaltar la fila que el usuario votó
                 if (miVoto && miVoto[cat]) {
-                    const optionSelected = miVoto[cat].toLowerCase(); // 'a' o 'b'
-                    const labelNode = document.getElementById(`pct-${cat}-${optionSelected}`).parentElement.querySelector('.result-label');
-                    
-                    if (labelNode) {
-                        labelNode.parentElement.classList.add('my-vote-highlight');
-                        labelNode.innerHTML += ` <span class="my-vote-badge">TU VOTO</span>`;
+                    const side = miVoto[cat].toLowerCase(); // 'a' o 'b'
+                    const row  = document.getElementById(`row-${cat}-${side}`);
+                    if (row) {
+                        row.classList.add('my-vote-highlight');
+                        const lbl = row.querySelector('.result-label');
+                        if (lbl && !lbl.querySelector('.my-vote-badge')) {
+                            lbl.insertAdjacentHTML('beforeend', ' <span class="my-vote-badge">Tu voto</span>');
+                        }
                     }
                 }
             }, 200);
         });
-        document.getElementById('total-votos').textContent = `Total de votos: ${Math.max(p.total, 1)}`; // fallback visual en caso de delay backend
+
+        const totalEl = document.getElementById('total-votos');
+        if (totalEl) totalEl.textContent = `Total de votos: ${Math.max(p.total, 1)}`;
     }
 
     // Si el usuario ya votó, cargar resultados al inicio

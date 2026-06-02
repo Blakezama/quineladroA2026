@@ -709,6 +709,19 @@ def hacer_admin(user_id):
     db.session.commit()
     return redirect(url_for('admin_usuarios'))
 
+@app.route('/admin/resetear_password/<int:user_id>', methods=['POST'])
+@admin_required
+def resetear_password(user_id):
+    usuario = Usuario.query.get_or_404(user_id)
+    nueva_password = request.form.get('nueva_password', '').strip()
+    if len(nueva_password) < 4:
+        flash('La contraseña debe tener al menos 4 caracteres.', 'error')
+        return redirect(url_for('admin_usuarios'))
+    usuario.set_password(nueva_password)
+    db.session.commit()
+    flash(f'✅ Contraseña de {usuario.nombre} actualizada correctamente.', 'success')
+    return redirect(url_for('admin_usuarios'))
+
 # ==========================================
 # 7. ACTUALIZACIONES EN TIEMPO REAL
 # ==========================================

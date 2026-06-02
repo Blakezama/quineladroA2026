@@ -3,6 +3,42 @@
 {% block title %}Mi Perfil - Quiniela Mundial 2026{% endblock %}
 
 {% block content %}
+<style>
+    /* ── Perfil: grid de estadísticas responsive ── */
+    .prediction-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        background: rgba(0,0,0,0.2);
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    @media (max-width: 600px) {
+        .prediction-stats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .prediction-stats-grid > div {
+            border-left: none !important;
+            border-right: none !important;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .prediction-stats-grid > div:last-child {
+            border-bottom: none;
+        }
+    }
+    /* Avatar de perfil responsive */
+    @media (max-width: 480px) {
+        .perfil-avatar-wrap { width: 110px !important; height: 110px !important; }
+        .perfil-avatar-wrap .initials { font-size: 2.5rem !important; }
+    }
+    /* Nombre+email — evitar overflow */
+    .perfil-user-label {
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+</style>
 <div class="vote-card" style="max-width: 800px; margin-top: 2rem;">
     <div class="vote-header">
         <div style="display: flex; justify-content: center; margin-bottom: 2rem; flex-direction: column; align-items: center; gap: 1rem;">
@@ -79,7 +115,7 @@
                         {{ item.partido.equipo_b }}
                     </h3>
 
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px;">
+                    <div class="prediction-stats-grid">
                         
                         <!-- Ganador -->
                         <div style="text-align: center;">

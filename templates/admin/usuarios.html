@@ -3,6 +3,142 @@
 {% block title %}Gestión de Usuarios - Admin{% endblock %}
 
 {% block content %}
+<style>
+    /* ===== MODAL DE RESET CONTRASEÑA ===== */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 9000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.25s ease, visibility 0.25s;
+    }
+    .modal-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    .modal-box {
+        background: #002f47;
+        border: 1px solid rgba(120, 222, 212, 0.35);
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        width: 90%;
+        max-width: 420px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        transform: translateY(-20px) scale(0.97);
+        transition: transform 0.25s ease;
+    }
+    .modal-overlay.active .modal-box {
+        transform: translateY(0) scale(1);
+    }
+    .modal-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .modal-subtitle {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+    }
+    .modal-subtitle strong {
+        color: var(--text-main);
+    }
+    .modal-input {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        background: rgba(0,0,0,0.3);
+        border: 1px solid rgba(120, 222, 212, 0.3);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-family: inherit;
+        font-size: 1rem;
+        margin-bottom: 1.25rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+    .modal-input:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(120, 222, 212, 0.2);
+    }
+    .modal-input-wrapper {
+        position: relative;
+    }
+    .modal-eye-btn {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-65%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--text-dim);
+        font-size: 1.1rem;
+        padding: 0;
+        line-height: 1;
+    }
+    .modal-eye-btn:hover { color: var(--accent-color); }
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+    .btn-cancel {
+        background: rgba(255,255,255,0.06);
+        color: var(--text-dim);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    .btn-cancel:hover { background: rgba(255,255,255,0.12); }
+    .btn-save-pwd {
+        background: linear-gradient(135deg, #00829B, #78DED4);
+        color: #fff;
+        border: none;
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 700;
+        transition: all 0.2s;
+    }
+    .btn-save-pwd:hover {
+        box-shadow: 0 4px 16px rgba(120, 222, 212, 0.45);
+        transform: translateY(-1px);
+    }
+    .btn-reset-pwd {
+        background: rgba(245, 158, 11, 0.15);
+        color: #fbbf24;
+        border: 1px solid rgba(245, 158, 11, 0.5);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        margin-left: 0.4rem;
+    }
+    .btn-reset-pwd:hover {
+        background: rgba(245, 158, 11, 0.3);
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+</style>
+
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <h1 style="margin: 0;">👥 Gestión de Usuarios</h1>
@@ -39,6 +175,7 @@
                         {% endif %}
                     </td>
                     <td>
+                        <!-- Botón Admin Toggle -->
                         <form method="POST" action="{{ url_for('hacer_admin', user_id=u.id) }}" style="display: inline;">
                             {% if u.is_admin %}
                             <button type="submit" class="btn" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; padding: 0.4rem 0.8rem; font-size: 0.8rem;">Quitar Admin</button>
@@ -46,6 +183,14 @@
                             <button type="submit" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">Hacer Admin</button>
                             {% endif %}
                         </form>
+
+                        <!-- Botón Restablecer Contraseña -->
+                        <button 
+                            class="btn-reset-pwd" 
+                            onclick="abrirModalPwd({{ u.id }}, '{{ u.nombre }}')"
+                            title="Restablecer contraseña de {{ u.nombre }}">
+                            🔑 Contraseña
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -53,4 +198,68 @@
         </table>
     </div>
 </div>
+
+<!-- ===== MODAL RESTABLECER CONTRASEÑA ===== -->
+<div class="modal-overlay" id="pwdModal">
+    <div class="modal-box">
+        <div class="modal-title">🔑 Restablecer Contraseña</div>
+        <p class="modal-subtitle">Establecer nueva contraseña para <strong id="modalUserName"></strong></p>
+
+        <form method="POST" id="pwdForm" action="">
+            <div class="modal-input-wrapper">
+                <input 
+                    type="password" 
+                    id="nueva_password" 
+                    name="nueva_password" 
+                    class="modal-input" 
+                    placeholder="Nueva contraseña (mín. 4 caracteres)" 
+                    required 
+                    minlength="4"
+                    autocomplete="new-password">
+                <button type="button" class="modal-eye-btn" id="eyeBtn" onclick="togglePwd()" title="Mostrar/ocultar contraseña">👁️</button>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn-save-pwd">💾 Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalPwd(userId, userName) {
+        document.getElementById('modalUserName').textContent = userName;
+        document.getElementById('pwdForm').action = `/admin/resetear_password/${userId}`;
+        document.getElementById('nueva_password').value = '';
+        document.getElementById('pwdModal').classList.add('active');
+        setTimeout(() => document.getElementById('nueva_password').focus(), 200);
+    }
+
+    function cerrarModal() {
+        document.getElementById('pwdModal').classList.remove('active');
+    }
+
+    function togglePwd() {
+        const input = document.getElementById('nueva_password');
+        const btn = document.getElementById('eyeBtn');
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('pwdModal').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
+</script>
 {% endblock %}

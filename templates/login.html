@@ -39,6 +39,7 @@
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 15px 45px rgba(0, 77, 113, 0.5);
+        margin-top: 39px; /* Alineación perfecta con el carrusel de anuncios (compensa .ad-label + gap) */
     }
 
     /* Panel Izquierdo - Gradiente cyan similar a la imagen */
@@ -126,6 +127,34 @@
         bottom: -10px;
         border: 2px solid rgba(255,255,255,0.4);
         border-radius: 50%;
+    }
+
+    /* Texto curvo alrededor del balón */
+    .ball-text-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 440px;
+        height: 440px;
+        z-index: 3;
+        pointer-events: none;
+        animation: ringRotateIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes ringRotateIn {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.85) rotate(-20deg); }
+        100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+    }
+
+    .ball-text-ring text {
+        fill: #ffffff;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        filter: drop-shadow(0 1px 3px rgba(0, 77, 113, 0.6));
     }
 
     .logo-left-circle svg {
