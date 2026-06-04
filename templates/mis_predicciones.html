@@ -43,43 +43,7 @@
             </div>
         </div>
 
-        {# TARJETA AMARILLA #}
-        <div class="results-section">
-            <div class="results-section-title">🟨 PRIMERA TARJETA AMARILLA</div>
-            <div class="result-row">
-                <div class="result-label">{{ item.info.equipo_a }}</div>
-                <div class="result-bar-container">
-                    <div class="result-bar" data-width="{{ item.stats.amarilla.A }}"></div>
-                </div>
-                <div class="result-percentage">{{ item.stats.amarilla.A }}%</div>
-            </div>
-            <div class="result-row">
-                <div class="result-label">{{ item.info.equipo_b }}</div>
-                <div class="result-bar-container">
-                    <div class="result-bar bar-b" data-width="{{ item.stats.amarilla.B }}"></div>
-                </div>
-                <div class="result-percentage">{{ item.stats.amarilla.B }}%</div>
-            </div>
-        </div>
 
-        {# TARJETA ROJA #}
-        <div class="results-section">
-            <div class="results-section-title">🟥 PRIMERA TARJETA ROJA</div>
-            <div class="result-row">
-                <div class="result-label">{{ item.info.equipo_a }}</div>
-                <div class="result-bar-container">
-                    <div class="result-bar" data-width="{{ item.stats.roja.A }}"></div>
-                </div>
-                <div class="result-percentage">{{ item.stats.roja.A }}%</div>
-            </div>
-            <div class="result-row">
-                <div class="result-label">{{ item.info.equipo_b }}</div>
-                <div class="result-bar-container">
-                    <div class="result-bar bar-b" data-width="{{ item.stats.roja.B }}"></div>
-                </div>
-                <div class="result-percentage">{{ item.stats.roja.B }}%</div>
-            </div>
-        </div>
 
         <div class="total-votes-badge">
             Total de votos: {{ item.stats.total }}

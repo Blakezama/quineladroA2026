@@ -115,29 +115,21 @@
                         {{ item.partido.equipo_b }}
                     </h3>
 
-                    <div class="prediction-stats-grid">
+                    <div class="prediction-stats-grid" style="grid-template-columns: repeat(2, 1fr);">
                         
                         <!-- Ganador -->
                         <div style="text-align: center;">
                             <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem;">⚽ Ganador</div>
                             <div style="font-weight: 600; color: #fff;">
-                                {% if item.voto_ganador == 'A' %} {{ item.partido.equipo_a }} {% else %} {{ item.partido.equipo_b }} {% endif %}
+                                {% if item.voto_ganador == 'A' %} {{ item.partido.equipo_a }} {% elif item.voto_ganador == 'B' %} {{ item.partido.equipo_b }} {% else %} Empate {% endif %}
                             </div>
                         </div>
 
-                        <!-- Amarilla -->
-                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05);">
-                            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem;">🟨 1ra Amarilla</div>
-                            <div style="font-weight: 600; color: #fff;">
-                                {% if item.voto_amarilla == 'A' %} {{ item.partido.equipo_a }} {% else %} {{ item.partido.equipo_b }} {% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Roja -->
-                        <div style="text-align: center;">
-                            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem;">🟥 1ra Roja</div>
-                            <div style="font-weight: 600; color: #fff;">
-                                {% if item.voto_roja == 'A' %} {{ item.partido.equipo_a }} {% else %} {{ item.partido.equipo_b }} {% endif %}
+                        <!-- Resultado -->
+                        <div style="text-align: center; border-left: 1px solid rgba(255,255,255,0.05);">
+                            <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.5rem;">🔢 Resultado Exacto</div>
+                            <div style="font-weight: 600; color: var(--accent-color); font-size: 1.1rem; letter-spacing: 2px;">
+                                {{ item.goles_a if item.goles_a != None else '?' }} - {{ item.goles_b if item.goles_b != None else '?' }}
                             </div>
                         </div>
 

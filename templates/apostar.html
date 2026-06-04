@@ -63,36 +63,12 @@
             </div>
         </div>
 
-        <!-- 3. Primera Tarjeta Amarilla -->
-        <div class="vote-section">
-            <div class="vote-section-title">🟨 Primera Tarjeta Amarilla</div>
-            <div class="card-toggle">
-                <div class="card-toggle-btn" data-category="amarilla" data-value="A" onclick="selectVote(this)">
-                    🟨 {{ partido.equipo_a }}
-                </div>
-                <div class="card-toggle-btn" data-category="amarilla" data-value="B" onclick="selectVote(this)">
-                    🟨 {{ partido.equipo_b }}
-                </div>
-            </div>
-        </div>
 
-        <!-- 4. Primera Tarjeta Roja -->
-        <div class="vote-section">
-            <div class="vote-section-title">🟥 Primera Tarjeta Roja</div>
-            <div class="card-toggle">
-                <div class="card-toggle-btn" data-category="roja" data-value="A" onclick="selectVote(this)">
-                    🟥 {{ partido.equipo_a }}
-                </div>
-                <div class="card-toggle-btn" data-category="roja" data-value="B" onclick="selectVote(this)">
-                    🟥 {{ partido.equipo_b }}
-                </div>
-            </div>
-        </div>
 
         <!-- Botón de Envío y Puntaje Potencial -->
         <div class="vote-submit" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
             <div id="potential-points-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 0.6rem 1.25rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: all 0.3s; margin-bottom: 0.5rem;">
-                🏆 Puntaje en juego: 8 / 17 pts
+                🏆 Puntaje en juego: 8 / 8 pts
             </div>
             <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="openConfirmModal()">
                 Selecciona todas las opciones para votar
@@ -105,8 +81,6 @@
             <ul style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
                 <li><strong>Acierto de Ganador:</strong> 3 Puntos</li>
                 <li><strong>Marcador Exacto:</strong> +5 Puntos adicionales (Total 8)</li>
-                <li><strong>Primera Amarilla Correcta:</strong> 2 Puntos</li>
-                <li><strong>Primera Roja Correcta:</strong> 7 Puntos</li>
             </ul>
         </div>
     </div>
@@ -131,14 +105,6 @@
             <div class="my-pred-card">
                 <span class="my-pred-label">🔢 Resultado</span>
                 <div class="my-pred-value my-pred-score" id="my-score-display">—</div>
-            </div>
-            <div class="my-pred-card">
-                <span class="my-pred-label">🟨 1ª Amarilla</span>
-                <div class="my-pred-value" id="my-amarilla-display">—</div>
-            </div>
-            <div class="my-pred-card">
-                <span class="my-pred-label">🟥 1ª Roja</span>
-                <div class="my-pred-value" id="my-roja-display">—</div>
             </div>
         </div>
 
@@ -171,43 +137,7 @@
             </div>
         </div>
 
-        <!-- Amarilla -->
-        <div class="result-block">
-            <div class="result-block-header">🟨 Primera Tarjeta Amarilla</div>
-            <div class="result-row" id="row-amarilla-a">
-                <span class="result-label" id="lbl-amarilla-a">{{ partido.equipo_a }}</span>
-                <div class="result-bar-container">
-                    <div class="result-bar" id="bar-amarilla-a" style="width:0%"></div>
-                </div>
-                <span class="result-percentage" id="pct-amarilla-a">0%</span>
-            </div>
-            <div class="result-row" id="row-amarilla-b">
-                <span class="result-label" id="lbl-amarilla-b">{{ partido.equipo_b }}</span>
-                <div class="result-bar-container">
-                    <div class="result-bar bar-b" id="bar-amarilla-b" style="width:0%"></div>
-                </div>
-                <span class="result-percentage" id="pct-amarilla-b">0%</span>
-            </div>
-        </div>
 
-        <!-- Roja -->
-        <div class="result-block">
-            <div class="result-block-header">🟥 Primera Tarjeta Roja</div>
-            <div class="result-row" id="row-roja-a">
-                <span class="result-label" id="lbl-roja-a">{{ partido.equipo_a }}</span>
-                <div class="result-bar-container">
-                    <div class="result-bar" id="bar-roja-a" style="width:0%"></div>
-                </div>
-                <span class="result-percentage" id="pct-roja-a">0%</span>
-            </div>
-            <div class="result-row" id="row-roja-b">
-                <span class="result-label" id="lbl-roja-b">{{ partido.equipo_b }}</span>
-                <div class="result-bar-container">
-                    <div class="result-bar bar-b" id="bar-roja-b" style="width:0%"></div>
-                </div>
-                <span class="result-percentage" id="pct-roja-b">0%</span>
-            </div>
-        </div>
 
         <div class="total-votes-badge" id="total-votos">—</div>
 
@@ -244,20 +174,6 @@
                 <span class="confirm-label">🔢 Resultado</span>
                 <div class="confirm-value">
                     <span id="cm-resultado" class="cm-score"></span>
-                </div>
-            </div>
-            <!-- Amarilla -->
-            <div class="confirm-row">
-                <span class="confirm-label">🟨 1ª Amarilla</span>
-                <div class="confirm-value">
-                    <span id="cm-amarilla"></span>
-                </div>
-            </div>
-            <!-- Roja -->
-            <div class="confirm-row">
-                <span class="confirm-label">🟥 1ª Roja</span>
-                <div class="confirm-value">
-                    <span id="cm-roja"></span>
                 </div>
             </div>
         </div>
@@ -564,7 +480,7 @@
     const DATA_VOTO = JSON.parse(document.getElementById('data-partido').textContent);
     const PARTIDO_ID = DATA_VOTO.id;
     // Por defecto 0-0 es Empate
-    const state = { ganador: 'E', amarilla: null, roja: null, goles_a: 0, goles_b: 0 };
+    const state = { ganador: 'E', amarilla: 'X', roja: 'X', goles_a: 0, goles_b: 0 };
 
     function updateScore(team, delta) {
         const inputId = `input-goles-${team}`;
@@ -632,26 +548,16 @@
         const btn = document.getElementById('btn-submit-vote');
         let points = 8; // Marcador base: 3 ganador + 5 exacto = 8 pts
         
-        if (state.amarilla) points += 2;
-        if (state.roja) points += 7;
-        
         const badge = document.getElementById('potential-points-badge');
         if (badge) {
-            badge.textContent = `🏆 Puntaje en juego: ${points} / 17 pts`;
-            if (points === 17) {
-                badge.style.background = 'rgba(120, 222, 212, 0.1)';
-                badge.style.borderColor = 'var(--accent-color)';
-                badge.style.color = 'var(--accent-color)';
-                badge.style.boxShadow = '0 0 15px rgba(120, 222, 212, 0.3)';
-            } else {
-                badge.style.background = 'rgba(255, 255, 255, 0.05)';
-                badge.style.borderColor = 'rgba(255,255,255,0.1)';
-                badge.style.color = 'var(--text-dim)';
-                badge.style.boxShadow = 'none';
-            }
+            badge.textContent = `🏆 Puntaje en juego: ${points} / 8 pts`;
+            badge.style.background = 'rgba(120, 222, 212, 0.1)';
+            badge.style.borderColor = 'var(--accent-color)';
+            badge.style.color = 'var(--accent-color)';
+            badge.style.boxShadow = '0 0 15px rgba(120, 222, 212, 0.3)';
         }
 
-        if (state.ganador && state.amarilla && state.roja) {
+        if (state.ganador !== null) {
             btn.disabled = false;
             btn.textContent = 'Enviar Predicción ⚡';
         }
@@ -692,8 +598,7 @@
 
         document.getElementById('cm-resultado').textContent =
             `${EQUIPO_A}  ${state.goles_a} – ${state.goles_b}  ${EQUIPO_B}`;
-        document.getElementById('cm-amarilla').textContent = _teamName(state.amarilla);
-        document.getElementById('cm-roja').textContent     = _teamName(state.roja);
+
 
         // Resetear botón de confirmar (por si se abrió antes)
         const btnOk = document.getElementById('cm-btn-confirmar');
@@ -769,14 +674,13 @@
         if (miVoto) {
             const teamName = v => v === 'A' ? EQUIPO_A : v === 'B' ? EQUIPO_B : 'Empate';
             document.getElementById('my-ganador-display').textContent  = teamName(miVoto.ganador);
-            document.getElementById('my-amarilla-display').textContent = teamName(miVoto.amarilla);
-            document.getElementById('my-roja-display').textContent     = teamName(miVoto.roja);
+
             const ga = miVoto.goles_a ?? '?', gb = miVoto.goles_b ?? '?';
             document.getElementById('my-score-display').textContent = `${ga} – ${gb}`;
         }
 
         // ── Animar barras de % ──
-        const categories = ['ganador', 'amarilla', 'roja'];
+        const categories = ['ganador'];
         categories.forEach(cat => {
             setTimeout(() => {
                 ['a','b','e'].forEach(side => {

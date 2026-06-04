@@ -155,6 +155,16 @@
         width: 220px;
         box-sizing: border-box;
         flex-shrink: 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .bracket-round-title:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    .bracket-round-title.active {
+        background: var(--accent-color) !important;
+        color: var(--primary-bg) !important;
+        box-shadow: 0 0 10px rgba(120, 222, 212, 0.4);
     }
     .bracket-match {
         background: var(--primary-bg);
@@ -307,95 +317,294 @@
     }
 
 
+    /* ===== USER VOTE HIGHLIGHT ===== */
+    .b-team.user-voted {
+        background: rgba(251, 191, 36, 0.08);
+        border-left: 3px solid #fbbf24;
+        padding-left: calc(1rem - 3px);
+    }
+    .vote-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: #1a1a2e;
+        font-size: 0.55rem;
+        font-weight: 800;
+        padding: 0.1rem 0.4rem;
+        border-radius: 4px;
+        margin-left: 0.4rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        vertical-align: middle;
+        animation: voteGlow 2s ease-in-out infinite;
+    }
+    @keyframes voteGlow {
+        0%, 100% { box-shadow: 0 0 4px rgba(251, 191, 36, 0.3); }
+        50% { box-shadow: 0 0 10px rgba(251, 191, 36, 0.6); }
+    }
+    .match-finished {
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+    .match-finished .b-team.winner {
+        background: rgba(34, 197, 94, 0.08);
+    }
+
 </style>
 
 <div id="tab-fase-final" class="tab-content">
-    <!-- Barra de navegación por ronda (estilo Google) -->
-    <nav class="bracket-nav" id="bracket-nav">
-        <button class="bracket-nav-btn active" onclick="scrollToBracketRound('col-r32', this)">Eliminatoria de 32</button>
-        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-octavos', this)">Octavos de final</button>
-        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-cuartos', this)">Cuartos de final</button>
-        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-semis', this)">Semifinales</button>
-        <button class="bracket-nav-btn" onclick="scrollToBracketRound('col-final', this)">Final</button>
-    </nav>
-
     <div class="bracket-wrapper glass-card">
         <div class="bracket">
 
-            <!-- ELIMINATORIA DE 32 -->
+            <!-- DIECISEISAVOS DE FINAL (Round of 32 → 16 partidos) -->
             <div class="bracket-col-wrap">
-                <div class="bracket-round-title">Eliminatoria de 32</div>
+                <div class="bracket-round-title active" onclick="scrollToBracketRound('col-r32', this)">Eliminatoria de 16</div>
                 <div class="bracket-column" id="col-r32">
-                    {% set grupos_r32 = [('A','I'),('B','J'),('C','K'),('D','L'),('E','A'),('F','B'),('G','C'),('H','D'),
-                                         ('I','E'),('J','F'),('K','G'),('L','H'),('A','C'),('B','D'),('E','G'),('F','H')] %}
-                    {% for par in grupos_r32 %}
-                    <div class="bracket-match">
-                        <div class="b-team">
-                            <div style="display:flex;align-items:center;">
-                                <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
-                                1º Grupo {{ par[0] }}
+                    {% if bracket_data['Dieciseisavos de Final'] %}
+                        {% for match in bracket_data['Dieciseisavos de Final'] %}
+                        <div class="bracket-match {% if match.estado == 'finished' %}match-finished{% endif %}">
+                            {% set user_vote = user_knockout_votes.get(match.id) %}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_a > match.goles_b %}winner{% endif %} {% if user_vote == 'A' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_a) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_a) }}.png" alt="{{ match.equipo_a }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_a }}
+                                    {% if user_vote == 'A' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_a if match.goles_a is not none and match.estado == 'finished' else '-' }}</span>
                             </div>
-                            <span class="b-score">-</span>
-                        </div>
-                        <div class="b-team">
-                            <div style="display:flex;align-items:center;">
-                                <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
-                                2º Grupo {{ par[1] }}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_b > match.goles_a %}winner{% endif %} {% if user_vote == 'B' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_b) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_b) }}.png" alt="{{ match.equipo_b }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_b }}
+                                    {% if user_vote == 'B' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_b if match.goles_b is not none and match.estado == 'finished' else '-' }}</span>
                             </div>
-                            <span class="b-score">-</span>
                         </div>
-                    </div>
-                    {% endfor %}
+                        {% endfor %}
+                    {% else %}
+                        {# Placeholder while group stage hasn't finished #}
+                        {% set r32_slots = [
+                            ('1º Grupo A', '2º Grupo C'),
+                            ('1º Grupo B', '2º Grupo D'),
+                            ('1º Grupo C', '2º Grupo A'),
+                            ('1º Grupo D', '2º Grupo B'),
+                            ('1º Grupo E', '2º Grupo G'),
+                            ('1º Grupo F', '2º Grupo H'),
+                            ('1º Grupo G', '2º Grupo E'),
+                            ('1º Grupo H', '2º Grupo F'),
+                            ('1º Grupo I', '2º Grupo K'),
+                            ('1º Grupo J', '2º Grupo L'),
+                            ('1º Grupo K', '2º Grupo I'),
+                            ('1º Grupo L', '2º Grupo J'),
+                            ('3º Mejor A/B', '1º Grupo A'),
+                            ('3º Mejor C/D', '1º Grupo D'),
+                            ('3º Mejor E/F', '1º Grupo E'),
+                            ('3º Mejor I/J', '1º Grupo I')
+                        ] %}
+                        {% for slot in r32_slots %}
+                        <div class="bracket-match">
+                            <div class="b-team">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {{ slot[0] }}
+                                </div>
+                                <span class="b-score">-</span>
+                            </div>
+                            <div class="b-team">
+                                <div style="display:flex;align-items:center;">
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {{ slot[1] }}
+                                </div>
+                                <span class="b-score">-</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
 
             <!-- OCTAVOS DE FINAL -->
             <div class="bracket-col-wrap">
-                <div class="bracket-round-title">Octavos de Final</div>
+                <div class="bracket-round-title" onclick="scrollToBracketRound('col-octavos', this)">Octavos de Final</div>
                 <div class="bracket-column" id="col-octavos">
-                    {% for i in range(8) %}
-                    <div class="bracket-match">
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                    </div>
-                    {% endfor %}
+                    {% if bracket_data['Octavos de Final'] %}
+                        {% for match in bracket_data['Octavos de Final'] %}
+                        <div class="bracket-match {% if match.estado == 'finished' %}match-finished{% endif %}">
+                            {% set user_vote = user_knockout_votes.get(match.id) %}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_a > match.goles_b %}winner{% endif %} {% if user_vote == 'A' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_a) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_a) }}.png" alt="{{ match.equipo_a }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_a }}
+                                    {% if user_vote == 'A' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_a if match.goles_a is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_b > match.goles_a %}winner{% endif %} {% if user_vote == 'B' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_b) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_b) }}.png" alt="{{ match.equipo_b }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_b }}
+                                    {% if user_vote == 'B' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_b if match.goles_b is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for i in range(8) %}
+                        <div class="bracket-match">
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
 
             <!-- CUARTOS DE FINAL -->
             <div class="bracket-col-wrap">
-                <div class="bracket-round-title">Cuartos de Final</div>
+                <div class="bracket-round-title" onclick="scrollToBracketRound('col-cuartos', this)">Cuartos de Final</div>
                 <div class="bracket-column" id="col-cuartos">
-                    {% for i in range(4) %}
-                    <div class="bracket-match">
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                    </div>
-                    {% endfor %}
+                    {% if bracket_data['Cuartos de Final'] %}
+                        {% for match in bracket_data['Cuartos de Final'] %}
+                        <div class="bracket-match {% if match.estado == 'finished' %}match-finished{% endif %}">
+                            {% set user_vote = user_knockout_votes.get(match.id) %}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_a > match.goles_b %}winner{% endif %} {% if user_vote == 'A' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_a) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_a) }}.png" alt="{{ match.equipo_a }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_a }}
+                                    {% if user_vote == 'A' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_a if match.goles_a is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_b > match.goles_a %}winner{% endif %} {% if user_vote == 'B' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_b) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_b) }}.png" alt="{{ match.equipo_b }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_b }}
+                                    {% if user_vote == 'B' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_b if match.goles_b is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for i in range(4) %}
+                        <div class="bracket-match">
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
 
             <!-- SEMIFINALES -->
             <div class="bracket-col-wrap">
-                <div class="bracket-round-title">Semifinales</div>
+                <div class="bracket-round-title" onclick="scrollToBracketRound('col-semis', this)">Semifinales</div>
                 <div class="bracket-column" id="col-semis">
-                    {% for i in range(2) %}
-                    <div class="bracket-match">
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                        <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
-                    </div>
-                    {% endfor %}
+                    {% if bracket_data['Semifinales'] %}
+                        {% for match in bracket_data['Semifinales'] %}
+                        <div class="bracket-match {% if match.estado == 'finished' %}match-finished{% endif %}">
+                            {% set user_vote = user_knockout_votes.get(match.id) %}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_a > match.goles_b %}winner{% endif %} {% if user_vote == 'A' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_a) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_a) }}.png" alt="{{ match.equipo_a }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_a }}
+                                    {% if user_vote == 'A' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_a if match.goles_a is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_b > match.goles_a %}winner{% endif %} {% if user_vote == 'B' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_b) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_b) }}.png" alt="{{ match.equipo_b }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    {{ match.equipo_b }}
+                                    {% if user_vote == 'B' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_b if match.goles_b is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        {% for i in range(2) %}
+                        <div class="bracket-match">
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                            <div class="b-team"><span>Por definir</span><span class="b-score">-</span></div>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
                 </div>
             </div>
 
             <!-- FINAL -->
             <div class="bracket-col-wrap">
-                <div class="bracket-round-title" style="background: var(--accent-color); color: var(--primary-bg);">Gran Final</div>
+                <div class="bracket-round-title" onclick="scrollToBracketRound('col-final', this)" style="background: var(--accent-color); color: var(--primary-bg);">Gran Final</div>
                 <div class="bracket-column" id="col-final" style="justify-content:center;">
-                    <div class="bracket-match highlighted-match" style="border-width:2px;border-color:var(--accent-color);">
-                        <div class="b-team"><span>⚽ Finalista 1</span><span class="b-score">-</span></div>
-                        <div class="b-team"><span>⚽ Finalista 2</span><span class="b-score">-</span></div>
-                    </div>
+                    {% if bracket_data['Final'] %}
+                        {% for match in bracket_data['Final'] %}
+                        <div class="bracket-match highlighted-match" style="border-width:2px;border-color:var(--accent-color);">
+                            {% set user_vote = user_knockout_votes.get(match.id) %}
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_a > match.goles_b %}winner{% endif %} {% if user_vote == 'A' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_a) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_a) }}.png" alt="{{ match.equipo_a }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    ⚽ {{ match.equipo_a }}
+                                    {% if user_vote == 'A' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_a if match.goles_a is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                            <div class="b-team {% if match.estado == 'finished' and match.goles_a is not none and match.goles_b is not none and match.goles_b > match.goles_a %}winner{% endif %} {% if user_vote == 'B' %}user-voted{% endif %}">
+                                <div style="display:flex;align-items:center;">
+                                    {% if country_codes.get(match.equipo_b) %}
+                                    <img src="https://flagcdn.com/w40/{{ country_codes.get(match.equipo_b) }}.png" alt="{{ match.equipo_b }}">
+                                    {% else %}
+                                    <div style="width:20px;height:15px;background:rgba(255,255,255,0.1);margin-right:0.5rem;border-radius:2px;"></div>
+                                    {% endif %}
+                                    ⚽ {{ match.equipo_b }}
+                                    {% if user_vote == 'B' %}<span class="vote-badge">TU VOTO</span>{% endif %}
+                                </div>
+                                <span class="b-score">{{ match.goles_b if match.goles_b is not none and match.estado == 'finished' else '-' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="bracket-match highlighted-match" style="border-width:2px;border-color:var(--accent-color);">
+                            <div class="b-team"><span>⚽ Finalista 1</span><span class="b-score">-</span></div>
+                            <div class="b-team"><span>⚽ Finalista 2</span><span class="b-score">-</span></div>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -494,15 +703,7 @@
                     const code = COUNTRY_CODES[teamName];
                     const flag = code ? `<img src="https://flagcdn.com/w80/${code}.png" alt="Bandera ${teamName}" class="flag-icon">` : '';
                     
-                    let additionalIndicators = '';
-                    // Punto 3: Seguimiento dinámico de amarillas y rojas
-                    if (partido.estado === 'live') {
-                        if (partido.roja_real === teamLetterCode) {
-                            additionalIndicators += '<span style="background: #ef4444; color: white; padding: 2px 4px; border-radius: 4px; font-size: 0.6rem; font-weight: bold; margin-left: 0.5rem; letter-spacing: 1px;">🟥 ROJA</span>';
-                        }
-                    }
-
-                    return `${flag} <span class="team-name-text" style="display: flex; align-items: center;" title="${teamName}">${teamName} ${additionalIndicators}</span>`;
+                    return `${flag} <span class="team-name-text" style="display: flex; align-items: center;" title="${teamName}">${teamName}</span>`;
                 };
 
                 html += `
@@ -589,7 +790,7 @@
         // =====================================
         window.scrollToBracketRound = function(columnId, btnEl) {
             // Actualizar tab activo
-            document.querySelectorAll('.bracket-nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.bracket-round-title').forEach(b => b.classList.remove('active'));
             if (btnEl) btnEl.classList.add('active');
 
             // Remover resaltado de todos los recuadros

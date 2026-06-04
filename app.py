@@ -329,41 +329,53 @@ def inicio():
             'roja_real': p.roja_real,
             'stats': stats
         })
-    return render_template('index.html', partidos=partidos_json)
+    
+    # ==========================================
+    # KNOCKOUT BRACKET DATA
+    # ==========================================
+    knockout_partidos = Partido.query.filter(Partido.fase != 'Fase de Grupos').order_by(Partido.fecha).all()
+    
+    # Build bracket data organized by phase
+    bracket_data = {
+        'Dieciseisavos de Final': [],
+        'Octavos de Final': [],
+        'Cuartos de Final': [],
+        'Semifinales': [],
+        'Final': []
+    }
+    
+    # Get user votes for knockout matches
+    usuario_actual_id = session.get('usuario_id')
+    user_knockout_votes = {}
+    
+    for kp in knockout_partidos:
+        fase_key = kp.fase
+        if fase_key in bracket_data:
+            match_info = {
+                'id': kp.id,
+                'equipo_a': kp.equipo_a,
+                'equipo_b': kp.equipo_b,
+                'goles_a': kp.goles_a,
+                'goles_b': kp.goles_b,
+                'estado': kp.estado,
+                'fecha': kp.fecha.isoformat() if kp.fecha else '',
+            }
+            bracket_data[fase_key].append(match_info)
+            
+            # Get user's vote for this match
+            if usuario_actual_id:
+                voto = Voto.query.filter_by(usuario_id=usuario_actual_id, partido_id=kp.id).first()
+                if voto:
+                    user_knockout_votes[kp.id] = voto.voto_ganador  # 'A' or 'B'
+    
+    return render_template('index.html', partidos=partidos_json, bracket_data=bracket_data, user_knockout_votes=user_knockout_votes)
 
 @app.route('/grupos')
 def grupos():
     """Muestra las tablas de posiciones de los grupos."""
     return render_template('grupos.html')
 
-@app.route('/registro', methods=['GET', 'POST'])
-def registro():
-    """Ruta básica para registrar usuarios."""
-    if request.method == 'POST':
-        nombre = request.form.get('nombre')
-        email = request.form.get('email')
-        password = request.form.get('password')
 
-        if not password or len(password) < 4:
-            flash('La contraseña debe tener al menos 4 caracteres.', 'error')
-            return redirect(url_for('registro'))
-        
-        # Validar si el email ya existe
-        usuario_existente = Usuario.query.filter_by(email=email).first()
-        if usuario_existente:
-            flash('Este correo electrónico ya está registrado.', 'error')
-            return redirect(url_for('registro'))
-            
-        # Crear, hashear contraseña y guardar nuevo usuario
-        nuevo_usuario = Usuario(nombre=nombre, email=email)
-        nuevo_usuario.set_password(password)
-        db.session.add(nuevo_usuario)
-        db.session.commit()
-        
-        flash('Registro exitoso. ¡Empieza a hacer tus predicciones!', 'success')
-        return redirect(url_for('inicio'))
-        
-    return render_template('registro.html')
 
 @app.route('/apostar/<int:id_partido>')
 def apostar(id_partido):
@@ -408,8 +420,8 @@ def perfil():
         historial.append({
             'partido': voto.partido,
             'voto_ganador': voto.voto_ganador,
-            'voto_amarilla': voto.voto_amarilla,
-            'voto_roja': voto.voto_roja
+            'goles_a': voto.goles_a_prediccion,
+            'goles_b': voto.goles_b_prediccion
         })
         
     return render_template('perfil.html', usuario=usuario, historial=historial)
@@ -524,8 +536,13 @@ def api_votar(id_partido):
     goles_a = data.get('goles_a')
     goles_b = data.get('goles_b')
     
-    if ganador not in ('A', 'B', 'E') or amarilla not in ('A', 'B') or roja not in ('A', 'B'):
-        return jsonify({'error': 'Valores inválidos. Deben ser A o B.'}), 400
+    if ganador not in ('A', 'B', 'E'):
+        return jsonify({'error': 'Valores inválidos. Deben ser A o B o E.'}), 400
+        
+    if not amarilla:
+        amarilla = 'X'
+    if not roja:
+        roja = 'X'
         
     try:
         goles_a = int(goles_a)
@@ -818,56 +835,90 @@ def poblar_datos_iniciales():
         u1 = Usuario(nombre="Usuario Prueba", email="prueba@mundial.com", is_admin=True)
         db.session.add(u1)
         
-    # Generar cronograma completo de 72 partidos de fase de grupos (Ajuste oficial)
+    match_schedule_2026 = [
+        {'grupo': 'A', 'team1': 'México', 'team2': 'Sudáfrica', 'date': '2026-06-11', 'time_str': '13:00'},
+        {'grupo': 'A', 'team1': 'Corea del Sur', 'team2': 'Chequia', 'date': '2026-06-11', 'time_str': '20:00'},
+        {'grupo': 'A', 'team1': 'Chequia', 'team2': 'Sudáfrica', 'date': '2026-06-18', 'time_str': '12:00'},
+        {'grupo': 'A', 'team1': 'México', 'team2': 'Corea del Sur', 'date': '2026-06-18', 'time_str': '19:00'},
+        {'grupo': 'A', 'team1': 'Chequia', 'team2': 'México', 'date': '2026-06-24', 'time_str': '19:00'},
+        {'grupo': 'A', 'team1': 'Sudáfrica', 'team2': 'Corea del Sur', 'date': '2026-06-24', 'time_str': '19:00'},
+        {'grupo': 'B', 'team1': 'Canadá', 'team2': 'Bosnia y Herzegovina', 'date': '2026-06-12', 'time_str': '15:00'},
+        {'grupo': 'B', 'team1': 'Catar', 'team2': 'Suiza', 'date': '2026-06-13', 'time_str': '12:00'},
+        {'grupo': 'B', 'team1': 'Suiza', 'team2': 'Bosnia y Herzegovina', 'date': '2026-06-18', 'time_str': '12:00'},
+        {'grupo': 'B', 'team1': 'Canadá', 'team2': 'Catar', 'date': '2026-06-18', 'time_str': '15:00'},
+        {'grupo': 'B', 'team1': 'Suiza', 'team2': 'Canadá', 'date': '2026-06-24', 'time_str': '12:00'},
+        {'grupo': 'B', 'team1': 'Bosnia y Herzegovina', 'team2': 'Catar', 'date': '2026-06-24', 'time_str': '12:00'},
+        {'grupo': 'C', 'team1': 'Brasil', 'team2': 'Marruecos', 'date': '2026-06-13', 'time_str': '18:00'},
+        {'grupo': 'C', 'team1': 'Haití', 'team2': 'Escocia', 'date': '2026-06-13', 'time_str': '21:00'},
+        {'grupo': 'C', 'team1': 'Escocia', 'team2': 'Marruecos', 'date': '2026-06-19', 'time_str': '18:00'},
+        {'grupo': 'C', 'team1': 'Brasil', 'team2': 'Haití', 'date': '2026-06-19', 'time_str': '20:30'},
+        {'grupo': 'C', 'team1': 'Escocia', 'team2': 'Brasil', 'date': '2026-06-24', 'time_str': '18:00'},
+        {'grupo': 'C', 'team1': 'Marruecos', 'team2': 'Haití', 'date': '2026-06-24', 'time_str': '18:00'},
+        {'grupo': 'D', 'team1': 'Estados Unidos', 'team2': 'Paraguay', 'date': '2026-06-12', 'time_str': '18:00'},
+        {'grupo': 'D', 'team1': 'Australia', 'team2': 'Turquía', 'date': '2026-06-13', 'time_str': '21:00'},
+        {'grupo': 'D', 'team1': 'Estados Unidos', 'team2': 'Australia', 'date': '2026-06-19', 'time_str': '12:00'},
+        {'grupo': 'D', 'team1': 'Turquía', 'team2': 'Paraguay', 'date': '2026-06-19', 'time_str': '20:00'},
+        {'grupo': 'D', 'team1': 'Turquía', 'team2': 'Estados Unidos', 'date': '2026-06-25', 'time_str': '19:00'},
+        {'grupo': 'D', 'team1': 'Paraguay', 'team2': 'Australia', 'date': '2026-06-25', 'time_str': '19:00'},
+        {'grupo': 'E', 'team1': 'Alemania', 'team2': 'Curazao', 'date': '2026-06-14', 'time_str': '12:00'},
+        {'grupo': 'E', 'team1': 'Costa de Marfil', 'team2': 'Ecuador', 'date': '2026-06-14', 'time_str': '19:00'},
+        {'grupo': 'E', 'team1': 'Alemania', 'team2': 'Costa de Marfil', 'date': '2026-06-20', 'time_str': '16:00'},
+        {'grupo': 'E', 'team1': 'Ecuador', 'team2': 'Curazao', 'date': '2026-06-20', 'time_str': '19:00'},
+        {'grupo': 'E', 'team1': 'Curazao', 'team2': 'Costa de Marfil', 'date': '2026-06-25', 'time_str': '16:00'},
+        {'grupo': 'E', 'team1': 'Ecuador', 'team2': 'Alemania', 'date': '2026-06-25', 'time_str': '16:00'},
+        {'grupo': 'F', 'team1': 'Países Bajos', 'team2': 'Japón', 'date': '2026-06-14', 'time_str': '15:00'},
+        {'grupo': 'F', 'team1': 'Suecia', 'team2': 'Túnez', 'date': '2026-06-14', 'time_str': '20:00'},
+        {'grupo': 'F', 'team1': 'Países Bajos', 'team2': 'Suecia', 'date': '2026-06-20', 'time_str': '12:00'},
+        {'grupo': 'F', 'team1': 'Túnez', 'team2': 'Japón', 'date': '2026-06-20', 'time_str': '22:00'},
+        {'grupo': 'F', 'team1': 'Japón', 'team2': 'Suecia', 'date': '2026-06-25', 'time_str': '18:00'},
+        {'grupo': 'F', 'team1': 'Túnez', 'team2': 'Países Bajos', 'date': '2026-06-25', 'time_str': '18:00'},
+        {'grupo': 'G', 'team1': 'Bélgica', 'team2': 'Egipto', 'date': '2026-06-15', 'time_str': '12:00'},
+        {'grupo': 'G', 'team1': 'Irán', 'team2': 'Nueva Zelanda', 'date': '2026-06-15', 'time_str': '18:00'},
+        {'grupo': 'G', 'team1': 'Bélgica', 'team2': 'Irán', 'date': '2026-06-21', 'time_str': '12:00'},
+        {'grupo': 'G', 'team1': 'Nueva Zelanda', 'team2': 'Egipto', 'date': '2026-06-21', 'time_str': '18:00'},
+        {'grupo': 'G', 'team1': 'Egipto', 'team2': 'Irán', 'date': '2026-06-26', 'time_str': '20:00'},
+        {'grupo': 'G', 'team1': 'Nueva Zelanda', 'team2': 'Bélgica', 'date': '2026-06-26', 'time_str': '20:00'},
+        {'grupo': 'H', 'team1': 'España', 'team2': 'Cabo Verde', 'date': '2026-06-15', 'time_str': '12:00'},
+        {'grupo': 'H', 'team1': 'Arabia Saudita', 'team2': 'Uruguay', 'date': '2026-06-15', 'time_str': '18:00'},
+        {'grupo': 'H', 'team1': 'España', 'team2': 'Arabia Saudita', 'date': '2026-06-21', 'time_str': '12:00'},
+        {'grupo': 'H', 'team1': 'Uruguay', 'team2': 'Cabo Verde', 'date': '2026-06-21', 'time_str': '18:00'},
+        {'grupo': 'H', 'team1': 'Cabo Verde', 'team2': 'Arabia Saudita', 'date': '2026-06-26', 'time_str': '19:00'},
+        {'grupo': 'H', 'team1': 'Uruguay', 'team2': 'España', 'date': '2026-06-26', 'time_str': '18:00'},
+        {'grupo': 'I', 'team1': 'Francia', 'team2': 'Senegal', 'date': '2026-06-16', 'time_str': '15:00'},
+        {'grupo': 'I', 'team1': 'Irak', 'team2': 'Noruega', 'date': '2026-06-16', 'time_str': '18:00'},
+        {'grupo': 'I', 'team1': 'Francia', 'team2': 'Irak', 'date': '2026-06-22', 'time_str': '17:00'},
+        {'grupo': 'I', 'team1': 'Noruega', 'team2': 'Senegal', 'date': '2026-06-22', 'time_str': '20:00'},
+        {'grupo': 'I', 'team1': 'Noruega', 'team2': 'Francia', 'date': '2026-06-26', 'time_str': '15:00'},
+        {'grupo': 'I', 'team1': 'Senegal', 'team2': 'Irak', 'date': '2026-06-26', 'time_str': '15:00'},
+        {'grupo': 'J', 'team1': 'Argentina', 'team2': 'Argelia', 'date': '2026-06-16', 'time_str': '20:00'},
+        {'grupo': 'J', 'team1': 'Austria', 'team2': 'Jordania', 'date': '2026-06-16', 'time_str': '21:00'},
+        {'grupo': 'J', 'team1': 'Argentina', 'team2': 'Austria', 'date': '2026-06-22', 'time_str': '12:00'},
+        {'grupo': 'J', 'team1': 'Jordania', 'team2': 'Argelia', 'date': '2026-06-22', 'time_str': '20:00'},
+        {'grupo': 'J', 'team1': 'Argelia', 'team2': 'Austria', 'date': '2026-06-27', 'time_str': '21:00'},
+        {'grupo': 'J', 'team1': 'Jordania', 'team2': 'Argentina', 'date': '2026-06-27', 'time_str': '21:00'},
+        {'grupo': 'K', 'team1': 'Portugal', 'team2': 'RD Congo', 'date': '2026-06-17', 'time_str': '12:00'},
+        {'grupo': 'K', 'team1': 'Uzbekistán', 'team2': 'Colombia', 'date': '2026-06-17', 'time_str': '20:00'},
+        {'grupo': 'K', 'team1': 'Portugal', 'team2': 'Uzbekistán', 'date': '2026-06-23', 'time_str': '12:00'},
+        {'grupo': 'K', 'team1': 'Colombia', 'team2': 'RD Congo', 'date': '2026-06-23', 'time_str': '20:00'},
+        {'grupo': 'K', 'team1': 'Colombia', 'team2': 'Portugal', 'date': '2026-06-27', 'time_str': '19:30'},
+        {'grupo': 'K', 'team1': 'RD Congo', 'team2': 'Uzbekistán', 'date': '2026-06-27', 'time_str': '19:30'},
+        {'grupo': 'L', 'team1': 'Inglaterra', 'team2': 'Croacia', 'date': '2026-06-17', 'time_str': '15:00'},
+        {'grupo': 'L', 'team1': 'Ghana', 'team2': 'Panamá', 'date': '2026-06-17', 'time_str': '19:00'},
+        {'grupo': 'L', 'team1': 'Inglaterra', 'team2': 'Ghana', 'date': '2026-06-23', 'time_str': '16:00'},
+        {'grupo': 'L', 'team1': 'Panamá', 'team2': 'Croacia', 'date': '2026-06-23', 'time_str': '19:00'},
+        {'grupo': 'L', 'team1': 'Panamá', 'team2': 'Inglaterra', 'date': '2026-06-27', 'time_str': '17:00'},
+        {'grupo': 'L', 'team1': 'Croacia', 'team2': 'Ghana', 'date': '2026-06-27', 'time_str': '17:00'},
+    ]
+    
     partidos_a_insertar = []
-    grupos_letras = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
     
-    todos_los_enfrentamientos = []
-    
-    for grupo_id in grupos_letras:
-        equipos = MUNDIAL_DATA['Grupos'][grupo_id]
-        nombres_equipos = [eq['nombre'] for eq in equipos]
+    for match in match_schedule_2026:
+        # Parsing date "YYYY-MM-DD" and time "HH:MM"
+        year, month, day = map(int, match['date'].split('-'))
+        hour, minute = map(int, match['time_str'].split(':'))
+        fecha_partido = datetime(year, month, day, hour, minute)
         
-        # 6 enfrentamientos en un grupo de 4
-        enfrentamientos = [
-            (0, 1), (2, 3), # Jornada 1
-            (0, 2), (1, 3), # Jornada 2
-            (0, 3), (1, 2)  # Jornada 3
-        ]
-        
-        for i, (idx1, idx2) in enumerate(enfrentamientos):
-            eq_a = nombres_equipos[idx1]
-            eq_b = nombres_equipos[idx2]
-            jornada = i // 2
-            todos_los_enfrentamientos.append((jornada, grupo_id, eq_a, eq_b))
-            
-    # Ordenar por jornada, luego por grupo para tener una secuencia lógica de partidos
-    todos_los_enfrentamientos.sort(key=lambda x: (x[0], x[1]))
-    
-    # Calendario de partidos por día (11 al 27 de junio de 2026) = 72 partidos
-    fechas_por_dia = {
-        11: 2, 12: 2, 13: 4, 14: 4, 15: 4, 16: 4, 17: 4, 18: 4, 19: 4, 20: 4, 
-        21: 4, 22: 4, 23: 4, 24: 6, 25: 6, 26: 6, 27: 6
-    }
-    
-    horas_base = [13, 16, 19, 22] # Horarios de los partidos
-    
-    fechas_exactas = []
-    for dia, num_partidos in fechas_por_dia.items():
-        # Asignar horas dependiendo de cuántos partidos hay en el día
-        if num_partidos == 2:
-            horas_dia = [16, 19]
-        elif num_partidos == 4:
-            horas_dia = [13, 16, 19, 22]
-        else: # 6 partidos (última jornada, se juegan a la misma hora 2 partidos)
-            horas_dia = [16, 16, 19, 19, 22, 22]
-            
-        for i in range(num_partidos):
-            fechas_exactas.append(datetime(2026, 6, dia, horas_dia[i], 0))
-            
-    for idx, (jornada, grupo_id, eq_a, eq_b) in enumerate(todos_los_enfrentamientos):
-        fecha_partido = fechas_exactas[idx]
-        p = Partido(equipo_a=eq_a, equipo_b=eq_b, fecha=fecha_partido, fase="Fase de Grupos", grupo=grupo_id)
+        p = Partido(equipo_a=match['team1'], equipo_b=match['team2'], fecha=fecha_partido, fase="Fase de Grupos", grupo=match['grupo'])
         partidos_a_insertar.append(p)
         
     db.session.add_all(partidos_a_insertar)
