@@ -68,7 +68,7 @@
         <!-- Botón de Envío y Puntaje Potencial -->
         <div class="vote-submit" style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
             <div id="potential-points-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 0.6rem 1.25rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: all 0.3s; margin-bottom: 0.5rem;">
-                🏆 Puntaje en juego: 8 / 8 pts
+                🏆 Puntaje en juego: Hasta 5 pts
             </div>
             <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="openConfirmModal()">
                 Selecciona todas las opciones para votar
@@ -79,8 +79,8 @@
         <div class="rules-panel" style="margin-top: 2rem; background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
             <h3 style="margin-bottom: 1rem; color: var(--primary); font-size: 1.1rem;">📋 Reglas de Puntuación</h3>
             <ul style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
-                <li><strong>Acierto de Ganador:</strong> 3 Puntos</li>
-                <li><strong>Marcador Exacto:</strong> +5 Puntos adicionales (Total 8)</li>
+                <li><strong>Resultado Exacto:</strong> 5 Puntos (Le pegas al ganador y al marcador exacto)</li>
+                <li><strong>Diferencia:</strong> 3 Puntos (Aciertas el ganador, pero no el marcador exacto)</li>
             </ul>
         </div>
     </div>
@@ -546,11 +546,11 @@
 
     function checkSubmit() {
         const btn = document.getElementById('btn-submit-vote');
-        let points = 8; // Marcador base: 3 ganador + 5 exacto = 8 pts
+        let points = 5; // Puntaje máximo posible
         
         const badge = document.getElementById('potential-points-badge');
         if (badge) {
-            badge.textContent = `🏆 Puntaje en juego: ${points} / 8 pts`;
+            badge.textContent = `🏆 Puntaje en juego: Hasta ${points} pts`;
             badge.style.background = 'rgba(120, 222, 212, 0.1)';
             badge.style.borderColor = 'var(--accent-color)';
             badge.style.color = 'var(--accent-color)';

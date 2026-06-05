@@ -641,22 +641,20 @@ def ranking():
             if v.partido_id in resultados:
                 res = resultados[v.partido_id]
                 
-                # 1. Acierto de Ganador/Empate (3 pts)
-                if v.voto_ganador == res['ganador_real']:
-                    puntos_totales += 3
-                    
-                # 2. Marcador Exacto (+5 pts adicionales)
+                # Evaluar puntuación según las nuevas reglas
+                acerto_marcador = False
+                acerto_ganador = (v.voto_ganador == res['ganador_real'])
+                
                 if res['goles_a'] is not None and res['goles_b'] is not None:
                     if v.goles_a_prediccion == res['goles_a'] and v.goles_b_prediccion == res['goles_b']:
-                        puntos_totales += 5
-                        
-                # 3. Primera Amarilla correcta (2 pts)
-                if res['amarilla_real'] is not None and v.voto_amarilla == res['amarilla_real']:
-                    puntos_totales += 2
-                    
-                # 4. Primera Roja correcta (7 pts)
-                if res['roja_real'] is not None and v.voto_roja == res['roja_real']:
-                    puntos_totales += 7
+                        acerto_marcador = True
+                
+                if acerto_marcador:
+                    # Resultado exacto: acierta el ganador y el marcador exacto
+                    puntos_totales += 5
+                elif acerto_ganador:
+                    # Diferencia: acierta el ganador (o empate), pero no el marcador exacto
+                    puntos_totales += 3
                     
         ranking_data.append({
             'usuario': u,
