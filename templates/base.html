@@ -1537,10 +1537,10 @@
             </div>
         </div>
 
-
-
-        <div class="nav-container">
-            <button class="nav-toggle" id="navToggle">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <img src="{{ url_for('static', filename='img/logo_empresa.png') }}" alt="DroActiva" style="height: 35px; object-fit: contain;">
+            <div class="nav-container">
+                <button class="nav-toggle" id="navToggle">
                 Explorar Menú
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.25rem;">
@@ -1564,6 +1564,7 @@
                 <a href="{{ url_for('login') }}">🔑 Login</a>
                 {% endif %}
             </nav>
+            </div>
         </div>
     </header>
 
