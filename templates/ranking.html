@@ -87,11 +87,18 @@
     }
     
     .col-puntos {
-        width: 25%;
+        width: 18%;
         text-align: right;
         font-weight: 800;
         color: var(--accent-color);
         font-size: 1.2rem;
+    }
+
+    .col-stats {
+        width: 10%;
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-dim);
     }
 
     /* Avatares Circulares */
@@ -152,7 +159,9 @@
                 <tr>
                     <th class="col-pos">Posición</th>
                     <th>Usuario</th>
-                    <th class="col-puntos">Puntos Totales</th>
+                    <th class="col-stats" title="Marcadores exactos (5 pts c/u)">🎯</th>
+                    <th class="col-stats" title="Aciertos por diferencia (3 pts c/u)">✅</th>
+                    <th class="col-puntos">Puntos</th>
                 </tr>
             </thead>
             <tbody>
@@ -182,6 +191,8 @@
                             {% endif %}
                             <span>{{ item.usuario.nombre }}</span>
                         </td>
+                        <td class="col-stats" style="font-weight: 700; color: #fbbf24;">{{ item.exactos }}</td>
+                        <td class="col-stats" style="font-weight: 600;">{{ item.diferencias }}</td>
                         <td class="col-puntos">
                             {{ item.puntos }} pts
                         </td>
@@ -189,13 +200,21 @@
                     {% endfor %}
                 {% else %}
                 <tr>
-                    <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-dim);">
                         No hay usuarios para mostrar el ranking todavía.
                     </td>
                 </tr>
                 {% endif %}
             </tbody>
         </table>
+    </div>
+    <div style="margin-top: 1.5rem; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+        <h4 style="color: var(--accent-color); margin-bottom: 0.75rem; font-size: 0.95rem;">🏅 Criterios de Desempate</h4>
+        <ol style="color: var(--text-dim); font-size: 0.85rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+            <li>Mayor cantidad de marcadores exactos 🎯 (partidos con 5 pts)</li>
+            <li>Mayor cantidad de aciertos por diferencia ✅ (partidos con 3 pts)</li>
+            <li>Fecha y hora del último pronóstico (quien guardó primero tiene ventaja)</li>
+        </ol>
     </div>
 </div>
 {% endblock %}

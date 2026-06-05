@@ -391,6 +391,11 @@ def apostar(id_partido):
     voto_existente = Voto.query.filter_by(usuario_id=usuario_id, partido_id=id_partido).first()
     ya_voto = voto_existente is not None
     
+    # Bloqueo automático: 30 minutos antes del inicio del partido
+    ahora = datetime.utcnow()
+    hora_limite = partido.fecha - timedelta(minutes=30)
+    partido_bloqueado = (ahora >= hora_limite) and not ya_voto
+    
     # Datos del partido como diccionario para el frontend JS
     partido_data = {
         'id': partido.id,
@@ -398,10 +403,12 @@ def apostar(id_partido):
         'equipo_b': partido.equipo_b,
         'fecha': partido.fecha.strftime('%d/%m/%Y %H:%M'),
         'grupo': partido.grupo,
-        'fase': partido.fase
+        'fase': partido.fase,
+        'hora_limite': hora_limite.isoformat(),
+        'bloqueado': partido_bloqueado
     }
     
-    return render_template('apostar.html', partido=partido, partido_data=partido_data, ya_voto=ya_voto)
+    return render_template('apostar.html', partido=partido, partido_data=partido_data, ya_voto=ya_voto, partido_bloqueado=partido_bloqueado)
 
 
 @app.route('/perfil')
@@ -524,6 +531,13 @@ def api_votar(id_partido):
     if voto_existente:
         return jsonify({'error': 'Ya has votado en este partido'}), 409
     
+    # Bloqueo automático: 30 minutos antes del inicio del partido
+    partido = Partido.query.get_or_404(id_partido)
+    ahora = datetime.utcnow()
+    hora_limite = partido.fecha - timedelta(minutes=30)
+    if ahora >= hora_limite:
+        return jsonify({'error': '⏰ Pronóstico cerrado. Las predicciones se bloquean 30 minutos antes del inicio del partido.'}), 403
+    
     data = request.get_json()
     if not data:
         return jsonify({'error': 'Datos inválidos'}), 400
@@ -635,13 +649,21 @@ def ranking():
     
     for u in usuarios:
         puntos_totales = 0
+        exactos_count = 0      # Criterio desempate 1: más marcadores exactos
+        diferencia_count = 0   # Criterio desempate 2: más aciertos por diferencia
+        ultima_fecha_voto = None  # Criterio desempate 3: quién votó primero
         votos_usuario = Voto.query.filter_by(usuario_id=u.id).all()
         
         for v in votos_usuario:
+            # Rastrear la fecha más reciente de voto del usuario
+            if v.fecha_voto is not None:
+                if ultima_fecha_voto is None or v.fecha_voto > ultima_fecha_voto:
+                    ultima_fecha_voto = v.fecha_voto
+            
             if v.partido_id in resultados:
                 res = resultados[v.partido_id]
                 
-                # Evaluar puntuación según las nuevas reglas
+                # Evaluar puntuación según las reglas
                 acerto_marcador = False
                 acerto_ganador = (v.voto_ganador == res['ganador_real'])
                 
@@ -650,23 +672,42 @@ def ranking():
                         acerto_marcador = True
                 
                 if acerto_marcador:
-                    # Resultado exacto: acierta el ganador y el marcador exacto
+                    # Resultado exacto: 5 puntos
                     puntos_totales += 5
+                    exactos_count += 1
                 elif acerto_ganador:
-                    # Diferencia: acierta el ganador (o empate), pero no el marcador exacto
+                    # Diferencia: 3 puntos
                     puntos_totales += 3
+                    diferencia_count += 1
                     
         ranking_data.append({
             'usuario': u,
-            'puntos': puntos_totales
+            'puntos': puntos_totales,
+            'exactos': exactos_count,
+            'diferencias': diferencia_count,
+            'ultima_fecha': ultima_fecha_voto
         })
         
-    # Ordenar por puntos totales descendente
-    ranking_data.sort(key=lambda x: x['puntos'], reverse=True)
+    # Ordenar con criterios de desempate:
+    # 1. Más puntos totales (descendente)
+    # 2. Más marcadores exactos (descendente)
+    # 3. Más aciertos por diferencia (descendente)
+    # 4. Fecha de último pronóstico más temprana (ascendente = votó primero)
+    ranking_data.sort(key=lambda x: (
+        -x['puntos'],
+        -x['exactos'],
+        -x['diferencias'],
+        x['ultima_fecha'] if x['ultima_fecha'] else datetime.max
+    ))
     
-    # Asignar posición resolviendo empates simples (opcional mejora pero al menos tener índice)
+    # Asignar posición correcta (empates reales comparten posición)
     for index, data in enumerate(ranking_data):
-        data['posicion'] = index + 1
+        if index > 0 and data['puntos'] == ranking_data[index-1]['puntos'] \
+                     and data['exactos'] == ranking_data[index-1]['exactos'] \
+                     and data['diferencias'] == ranking_data[index-1]['diferencias']:
+            data['posicion'] = ranking_data[index-1]['posicion']
+        else:
+            data['posicion'] = index + 1
     
     return render_template('ranking.html', ranking_data=ranking_data)
 

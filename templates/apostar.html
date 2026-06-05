@@ -13,8 +13,21 @@
 
     <!-- ===== VISTA DE VOTACIÓN ===== -->
     <div id="voting-view" class="{% if ya_voto %}hidden-view{% endif %}">
+
+        {% if partido_bloqueado %}
+        <!-- Overlay de bloqueo -->
+        <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08)); border: 2px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 2rem; text-align: center; margin-bottom: 1.5rem;">
+            <div style="font-size: 3rem; margin-bottom: 0.75rem;">🔒</div>
+            <h2 style="color: #ef4444; margin-bottom: 0.5rem; font-size: 1.3rem;">Pronóstico Cerrado</h2>
+            <p style="color: var(--text-dim); font-size: 0.95rem; line-height: 1.6;">
+                Las predicciones se bloquean automáticamente <strong>30 minutos antes</strong> del inicio del partido.<br>
+                Este partido ya no acepta pronósticos. ¡Asegura tus jugadas con tiempo!
+            </p>
+        </div>
+        {% endif %}
+
         <!-- 1. ¿Quién ganará? (Automático basado en Resultado Exacto) -->
-        <div class="vote-section">
+        <div class="vote-section" {% if partido_bloqueado %}style="pointer-events: none; opacity: 0.35; filter: grayscale(0.5);"{% endif %}>
             <div class="vote-section-title">⚽ ¿Quién ganará?</div>
             <div class="vote-options" style="grid-template-columns: repeat(3, 1fr);">
                 <div class="vote-option selected" id="box-ganador-A" data-category="ganador" data-value="A" style="pointer-events: none; opacity: 0.5;">
@@ -37,7 +50,7 @@
         </div>
 
         <!-- 2. Resultado Exacto -->
-        <div class="vote-section">
+        <div class="vote-section" {% if partido_bloqueado %}style="pointer-events: none; opacity: 0.35; filter: grayscale(0.5);"{% endif %}>
             <div class="vote-section-title">🔢 Resultado Exacto</div>
             <div class="score-input-container" style="display: flex; justify-content: center; gap: 2rem; align-items: center; margin-top: 1rem;">
                 <!-- Equipo A Score -->
@@ -70,9 +83,15 @@
             <div id="potential-points-badge" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-dim); padding: 0.6rem 1.25rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; transition: all 0.3s; margin-bottom: 0.5rem;">
                 🏆 Puntaje en juego: Hasta 5 pts
             </div>
+            {% if partido_bloqueado %}
+            <button class="btn-vibrant" disabled style="opacity: 0.4; cursor: not-allowed;">
+                🔒 Pronóstico cerrado
+            </button>
+            {% else %}
             <button id="btn-submit-vote" class="btn-vibrant" disabled onclick="openConfirmModal()">
                 Selecciona todas las opciones para votar
             </button>
+            {% endif %}
         </div>
 
         <!-- Reglas de Puntuación -->
@@ -82,6 +101,16 @@
                 <li><strong>Resultado Exacto:</strong> 5 Puntos (Le pegas al ganador y al marcador exacto)</li>
                 <li><strong>Diferencia:</strong> 3 Puntos (Aciertas el ganador, pero no el marcador exacto)</li>
             </ul>
+            <h3 style="margin-top: 1.25rem; margin-bottom: 0.75rem; color: var(--primary); font-size: 1.1rem;">⏰ Bloqueo Automático</h3>
+            <p style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.5; margin: 0;">
+                La plataforma bloquea los pronósticos <strong>30 minutos antes</strong> del inicio de cada partido. Sin excepciones.
+            </p>
+            <h3 style="margin-top: 1.25rem; margin-bottom: 0.75rem; color: var(--primary); font-size: 1.1rem;">🏅 Criterios de Desempate</h3>
+            <ol style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; padding-left: 1.2rem; margin: 0;">
+                <li>Mayor cantidad de marcadores exactos (partidos con 5 pts)</li>
+                <li>Mayor cantidad de aciertos por diferencia (partidos con 3 pts)</li>
+                <li>Fecha y hora del último pronóstico (quien guardó primero tiene ventaja)</li>
+            </ol>
         </div>
     </div>
 
