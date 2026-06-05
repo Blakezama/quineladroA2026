@@ -1573,30 +1573,9 @@
         <!-- ===== SIDEBAR IZQUIERDO ===== -->
         <aside class="ad-sidebar" id="sidebar-left">
             <div class="ad-label">Publicidad</div>
-            <div class="ad-carousel" id="ad-carousel-left">
-                <div class="ad-carousel-track" id="track-left">
-                    <div class="ad-slide active">
-                        <img src="{{ url_for('static', filename='img/Imagen_1.png') }}"
-                            alt="Publicidad 1">
-                    </div>
-                    <div class="ad-slide">
-                        <img src="{{ url_for('static', filename='img/Imagen_2.png') }}"
-                            alt="Publicidad 2">
-                    </div>
-                    <div class="ad-slide">
-                        <img src="{{ url_for('static', filename='img/Imagen_3.png') }}"
-                            alt="Publicidad 3">
-                    </div>
-                    <div class="ad-slide">
-                        <img src="{{ url_for('static', filename='img/Imagen_4.png') }}"
-                            alt="Publicidad 4">
-                    </div>
-                    <div class="ad-slide">
-                        <img src="{{ url_for('static', filename='img/Imagen_5.png') }}"
-                            alt="Publicidad 5">
-                    </div>
-                </div>
-                <div class="ad-dots" id="dots-left"></div>
+            <div class="ad-carousel" style="display: flex; justify-content: center; align-items: center;">
+                <img src="{{ url_for('static', filename='img/imagen-izquierda.png') }}" 
+                     alt="Publicidad" style="width: 100%; height: auto; display: block;">
             </div>
         </aside>
 
@@ -1714,8 +1693,7 @@
                 }, offset);
             }
 
-            // Panel izquierdo: cambia cada 5 s
-            initAdCarousel('track-left', 'dots-left', 5000, 0);
+            // Panel izquierdo: cambiado a imagen estática
             // Panel derecho: cambia cada 5 s pero arranca 2.5 s después → efecto alterno
             initAdCarousel('track-right', 'dots-right', 5000, 2500);
 
