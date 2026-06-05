@@ -1574,8 +1574,13 @@
         <aside class="ad-sidebar" id="sidebar-left">
             <div class="ad-label">Publicidad</div>
             <div class="ad-carousel" style="display: flex; justify-content: center; align-items: center;">
-                <img src="{{ url_for('static', filename='img/imagen-izquierda.png') }}" 
-                     alt="Publicidad" style="width: 100%; height: auto; display: block;">
+                <a href="https://droactiva.com" target="_blank" style="width: 100%; display: block; text-decoration: none;">
+                    <img src="{{ url_for('static', filename='img/imagen-izquierda.png') }}" 
+                         alt="Publicidad" style="width: 100%; height: auto; display: block; transition: transform 0.3s;"
+                         onmouseover="this.style.transform='scale(1.02)';"
+                         onmouseout="this.style.transform='scale(1)';"
+                         title="Visitar DroActiva">
+                </a>
             </div>
         </aside>
 
