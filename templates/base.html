@@ -1536,8 +1536,12 @@
                 {% endif %}
             </div>
         </div>
+        <!-- Columna central vacía -->
+        <div></div>
 
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
+        <!-- Columna derecha: logo + menú -->
+        <div style="display: flex; align-items: center; gap: 1.5rem; justify-content: flex-end;">
+            <img src="{{ url_for('static', filename='img/imgdashboard1.png') }}" alt="Dashboard" style="height: 55px; object-fit: contain; border-radius: 4px;">
             <div class="nav-container">
                 <button class="nav-toggle" id="navToggle">
                 Explorar Menú
@@ -1564,7 +1568,6 @@
                 {% endif %}
             </nav>
             </div>
-            <img src="{{ url_for('static', filename='img/imgdashboard.png') }}" alt="Dashboard" style="height: 40px; object-fit: contain; border-radius: 4px;">
         </div>
     </header>
 
