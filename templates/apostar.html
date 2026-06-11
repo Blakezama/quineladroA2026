@@ -14,7 +14,21 @@
     <div class="vote-header">
         <span class="fase-badge">{{ partido.fase }} · Grupo {{ partido.grupo }}</span>
         <h1>{{ partido.equipo_a }} vs {{ partido.equipo_b }}</h1>
-        <p style="color: var(--text-dim); margin-top: 0.25rem;">{{ partido.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 0.75rem;">
+            {% if partido_anterior %}
+                <a href="{{ url_for('apostar', id_partido=partido_anterior.id) }}" class="nav-btn">⬅ Ir al partido anterior</a>
+            {% else %}
+                <a href="{{ url_for('inicio') }}" class="nav-btn">⬅ Atrás</a>
+            {% endif %}
+            
+            <p style="color: var(--text-dim); margin: 0; font-weight: 500;">{{ partido.fecha.strftime('%d/%m/%Y %H:%M') }}</p>
+            
+            {% if partido_siguiente %}
+                <a href="{{ url_for('apostar', id_partido=partido_siguiente.id) }}" class="nav-btn">Ir al partido siguiente ➡</a>
+            {% else %}
+                <a href="{{ url_for('mis_predicciones') }}" class="nav-btn">Ir a predicciones ➡</a>
+            {% endif %}
+        </div>
     </div>
 
     <!-- ===== VISTA DE VOTACIÓN ===== -->
@@ -494,8 +508,31 @@
         text-transform: uppercase;
     }
 
+    /* Botones de navegación (Anterior/Siguiente) */
+    .nav-btn {
+        color: var(--accent-color);
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        background: rgba(120, 222, 212, 0.08);
+        border: 1px solid rgba(120, 222, 212, 0.2);
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+    .nav-btn:hover {
+        background: rgba(120, 222, 212, 0.18);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(120, 222, 212, 0.15);
+    }
+    .nav-btn:active {
+        transform: translateY(0);
+    }
+
     @media (max-width: 480px) {
         .my-prediction-grid { grid-template-columns: 1fr; }
+        .vote-header > div { flex-direction: column; gap: 0.8rem !important; }
     }
 </style>
 

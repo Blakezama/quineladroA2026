@@ -408,7 +408,10 @@ def apostar(id_partido):
         'bloqueado': partido_bloqueado
     }
     
-    return render_template('apostar.html', partido=partido, partido_data=partido_data, ya_voto=ya_voto, partido_bloqueado=partido_bloqueado)
+    partido_anterior = Partido.query.get(id_partido - 1)
+    partido_siguiente = Partido.query.get(id_partido + 1)
+    
+    return render_template('apostar.html', partido=partido, partido_data=partido_data, ya_voto=ya_voto, partido_bloqueado=partido_bloqueado, partido_anterior=partido_anterior, partido_siguiente=partido_siguiente)
 
 
 @app.route('/perfil')
@@ -965,7 +968,8 @@ def poblar_datos_iniciales():
         # Parsing date "YYYY-MM-DD" and time "HH:MM"
         year, month, day = map(int, match['date'].split('-'))
         hour, minute = map(int, match['time_str'].split(':'))
-        fecha_partido = datetime(year, month, day, hour, minute)
+        # Se ajusta la hora a la de Venezuela sumando 2 horas
+        fecha_partido = datetime(year, month, day, hour, minute) + timedelta(hours=2)
         
         p = Partido(equipo_a=match['team1'], equipo_b=match['team2'], fecha=fecha_partido, fase="Fase de Grupos", grupo=match['grupo'])
         partidos_a_insertar.append(p)
