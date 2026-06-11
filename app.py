@@ -392,7 +392,7 @@ def apostar(id_partido):
     ya_voto = voto_existente is not None
     
     # Bloqueo automático: 30 minutos antes del inicio del partido
-    ahora = datetime.utcnow()
+    ahora = datetime.now()
     hora_limite = partido.fecha - timedelta(minutes=30)
     partido_bloqueado = (ahora >= hora_limite) and not ya_voto
     
@@ -533,7 +533,7 @@ def api_votar(id_partido):
     
     # Bloqueo automático: 30 minutos antes del inicio del partido
     partido = Partido.query.get_or_404(id_partido)
-    ahora = datetime.utcnow()
+    ahora = datetime.now()
     hora_limite = partido.fecha - timedelta(minutes=30)
     if ahora >= hora_limite:
         return jsonify({'error': '⏰ Pronóstico cerrado. Las predicciones se bloquean 30 minutos antes del inicio del partido.'}), 403
