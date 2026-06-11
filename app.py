@@ -788,7 +788,7 @@ def resetear_password(user_id):
     flash(f'✅ Contraseña de {usuario.nombre} actualizada correctamente.', 'success')
     return redirect(url_for('admin_usuarios'))
 
-@app.route('/admin/eliminar_usuario/<int:user_id>', methods=['POST'])
+@app.route('/admin/eliminar_usuario/<int:user_id>', methods=['GET', 'POST'])
 @admin_required
 def eliminar_usuario(user_id):
     # Evitar que el admin se elimine a sí mismo si es necesario, pero como dijo "los que yo quiera", vamos a permitirlo a menos que queramos protegerlo

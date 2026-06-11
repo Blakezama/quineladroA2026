@@ -209,13 +209,10 @@
                             🔑 Contraseña
                         </button>
 
-                        <!-- Botón Eliminar Usuario -->
                         {% if u.id != session.get('usuario_id') %}
-                        <form method="POST" action="{{ url_for('eliminar_usuario', user_id=u.id) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar permanentemente a {{ u.nombre }} y todas sus predicciones?');">
-                            <button type="submit" class="btn-delete-user" title="Eliminar a {{ u.nombre }}">
-                                🗑️ Eliminar
-                            </button>
-                        </form>
+                        <button type="button" class="btn-delete-user" data-name="{{ u.nombre }}" onclick="abrirModalDel({{ u.id }}, this.dataset.name)" title="Eliminar a {{ u.nombre }}">
+                            🗑️ Eliminar
+                        </button>
                         {% endif %}
                     </td>
                 </tr>
@@ -253,7 +250,23 @@
     </div>
 </div>
 
+<!-- ===== MODAL ELIMINAR USUARIO ===== -->
+<div class="modal-overlay" id="delModal">
+    <div class="modal-box" style="border-color: rgba(239, 68, 68, 0.5);">
+        <div class="modal-title" style="color: #ef4444;">⚠️ Eliminar Usuario</div>
+        <p class="modal-subtitle">¿Estás completamente seguro de que deseas eliminar a <strong id="modalDelUserName"></strong> y <strong>todas sus predicciones</strong>? Esta acción no se puede deshacer.</p>
+
+        <form method="POST" id="delForm" action="">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="cerrarModalDel()">Cancelar</button>
+                <button type="submit" class="btn-save-pwd" style="background: linear-gradient(135deg, #dc2626, #991b1b);">🗑️ Sí, Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
+    // Lógica Modal Contraseña
     function abrirModalPwd(userId, userName) {
         document.getElementById('modalUserName').textContent = userName;
         document.getElementById('pwdForm').action = `/admin/resetear_password/${userId}`;
@@ -278,14 +291,31 @@
         }
     }
 
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('pwdModal').addEventListener('click', function(e) {
-        if (e.target === this) cerrarModal();
+    // Lógica Modal Eliminar
+    function abrirModalDel(userId, userName) {
+        document.getElementById('modalDelUserName').textContent = userName;
+        document.getElementById('delForm').action = `/admin/eliminar_usuario/${userId}`;
+        document.getElementById('delModal').classList.add('active');
+    }
+
+    function cerrarModalDel() {
+        document.getElementById('delModal').classList.remove('active');
+    }
+
+    // Cerrar modales al hacer clic fuera
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
     });
 
     // Cerrar con Escape
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') cerrarModal();
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(overlay => overlay.classList.remove('active'));
+        }
     });
 </script>
 {% endblock %}
