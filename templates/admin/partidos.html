@@ -45,7 +45,10 @@
                         <option value="live" {% if p.estado == 'live' %}selected{% endif %}>En Vivo (live)</option>
                         <option value="finished" {% if p.estado == 'finished' %}selected{% endif %}>Finalizado (finished)</option>
                     </select>
-                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem;">Guardar Cambios</button>
+                    <div style="display: flex; gap: 0.5rem; width: 100%;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.5rem; flex: 1; font-size: 0.8rem;">Guardar Cambios</button>
+                        <a href="{{ url_for('admin_votos_partido', partido_id=p.id) }}" class="btn" style="background: rgba(120, 222, 212, 0.15); color: var(--accent-color); border: 1px solid var(--accent-color); padding: 0.5rem; text-align: center; text-decoration: none; flex: 1; font-size: 0.8rem;">Ver Votos</a>
+                    </div>
                 </div>
             </form>
         </div>

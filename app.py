@@ -757,6 +757,13 @@ def admin_partidos():
     partidos = Partido.query.order_by(Partido.fecha).all()
     return render_template('admin/partidos.html', partidos=partidos)
 
+@app.route('/admin/partidos/<int:partido_id>/votos')
+@admin_required
+def admin_votos_partido(partido_id):
+    partido = Partido.query.get_or_404(partido_id)
+    votos = Voto.query.filter_by(partido_id=partido_id).order_by(Voto.fecha_voto.desc()).all()
+    return render_template('admin/votos_partido.html', partido=partido, votos=votos)
+
 @app.route('/admin/hacer_admin/<int:user_id>', methods=['POST'])
 @admin_required
 def hacer_admin(user_id):
