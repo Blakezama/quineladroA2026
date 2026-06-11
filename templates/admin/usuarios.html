@@ -137,6 +137,23 @@
         background: rgba(245, 158, 11, 0.3);
         box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
     }
+    .btn-delete-user {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.5);
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all 0.2s;
+        margin-left: 0.4rem;
+    }
+    .btn-delete-user:hover {
+        background: rgba(239, 68, 68, 0.3);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
 </style>
 
 <div class="card">
@@ -191,6 +208,15 @@
                             title="Restablecer contraseña de {{ u.nombre }}">
                             🔑 Contraseña
                         </button>
+
+                        <!-- Botón Eliminar Usuario -->
+                        {% if u.id != session.get('usuario_id') %}
+                        <form method="POST" action="{{ url_for('eliminar_usuario', user_id=u.id) }}" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar permanentemente a {{ u.nombre }} y todas sus predicciones?');">
+                            <button type="submit" class="btn-delete-user" title="Eliminar a {{ u.nombre }}">
+                                🗑️ Eliminar
+                            </button>
+                        </form>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
