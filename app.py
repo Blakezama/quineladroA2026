@@ -812,7 +812,17 @@ def actualizar_marcadores():
     with app.app_context():
         api_key = os.environ.get('API_FOOTBALL_KEY')
         if not api_key or api_key == 'tu_api_key_aqui':
-            print("Esperando clave API válida en .env")
+            print("Esperando clave API válida en .env. Modo simulación MVP activado.")
+            # Finalizar los partidos que ya pasaron automáticamente
+            ahora = datetime.utcnow() - timedelta(hours=4)
+            partidos_pasados = Partido.query.filter(Partido.estado != 'finished').all()
+            for p in partidos_pasados:
+                # Asumimos que un partido dura aprox 2 horas. Si ya pasó ese tiempo, lo finalizamos.
+                if p.fecha + timedelta(hours=2) <= ahora:
+                    # Dejamos los goles intactos (0-0 por defecto, o los que el Admin haya puesto manualmente)
+                    p.estado = 'finished'
+                    print(f"Partido finalizado automáticamente por tiempo: {p.equipo_a} {p.goles_a} - {p.goles_b} {p.equipo_b}")
+            db.session.commit()
             return
             
         headers = {

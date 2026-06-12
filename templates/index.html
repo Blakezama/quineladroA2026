@@ -684,7 +684,19 @@
         function renderMatches() {
             // A. Filtrado Reactivo
             const matchesToRender = MATCHES_DATA.filter(partido => {
-                return gruposSeleccionados.length === 0 || gruposSeleccionados.includes(partido.grupo);
+                const matchGroup = gruposSeleccionados.length === 0 || gruposSeleccionados.includes(partido.grupo);
+                
+                // Ocultar los partidos que ya finalizaron
+                const isNotFinished = partido.estado !== 'finished';
+                
+                // Ocultar partidos de días pasados (por si no se actualizó el estado a finished)
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+                const fechaPartido = new Date(partido.fecha);
+                fechaPartido.setHours(0, 0, 0, 0);
+                const isNotPast = fechaPartido >= hoy;
+                
+                return matchGroup && isNotFinished && isNotPast;
             });
             
             // B. Estructura de Datos y Ordenamiento Cronológico (ISO 8601)
