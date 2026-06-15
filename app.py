@@ -391,10 +391,12 @@ def apostar(id_partido):
     voto_existente = Voto.query.filter_by(usuario_id=usuario_id, partido_id=id_partido).first()
     ya_voto = voto_existente is not None
     
-    # Bloqueo automático: 30 minutos antes del inicio del partido
+    # Bloqueo automático: 30 minutos antes del inicio, o si el partido está en vivo o finalizado
     ahora = datetime.utcnow() - timedelta(hours=4)
     hora_limite = partido.fecha - timedelta(minutes=30)
-    partido_bloqueado = (ahora >= hora_limite) and not ya_voto
+    por_tiempo = ahora >= hora_limite
+    por_estado = partido.estado in ('live', 'finished')
+    partido_bloqueado = (por_tiempo or por_estado) and not ya_voto
     
     # Datos del partido como diccionario para el frontend JS
     partido_data = {
@@ -534,10 +536,12 @@ def api_votar(id_partido):
     if voto_existente:
         return jsonify({'error': 'Ya has votado en este partido'}), 409
     
-    # Bloqueo automático: 30 minutos antes del inicio del partido
+    # Bloqueo automático: 30 minutos antes del inicio, o si el partido está en vivo o finalizado
     partido = Partido.query.get_or_404(id_partido)
     ahora = datetime.utcnow() - timedelta(hours=4)
     hora_limite = partido.fecha - timedelta(minutes=30)
+    if partido.estado in ('live', 'finished'):
+        return jsonify({'error': '⏰ Pronóstico cerrado. El partido ya está en curso o ha finalizado.'}), 403
     if ahora >= hora_limite:
         return jsonify({'error': '⏰ Pronóstico cerrado. Las predicciones se bloquean 30 minutos antes del inicio del partido.'}), 403
     
