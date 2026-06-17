@@ -17,7 +17,7 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'mi_secreto_super_seguro
 # Usar base de datos externa en producción (ej. Postgres) y SQLite en local
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mundial.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=5)
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['UPLOAD_FOLDER'] = 'static/uploads/perfiles'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB limit
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -811,71 +811,123 @@ def eliminar_usuario(user_id):
 # ==========================================
 # 7. ACTUALIZACIONES EN TIEMPO REAL
 # ==========================================
+TRADUCCION_EQUIPOS = {
+    "Mexico": "México", "South Africa": "Sudáfrica", "South Korea": "Corea del Sur",
+    "Czech Republic": "Chequia", "Czechia": "Chequia", "Canada": "Canadá",
+    "Bosnia and Herzegovina": "Bosnia y Herzegovina", "Qatar": "Catar",
+    "Switzerland": "Suiza", "Brazil": "Brasil", "Morocco": "Marruecos",
+    "Haiti": "Haití", "Scotland": "Escocia", "United States": "Estados Unidos",
+    "USA": "Estados Unidos", "Paraguay": "Paraguay", "Australia": "Australia",
+    "Turkey": "Turquía", "Turkiye": "Turquía", "Germany": "Alemania",
+    "Ecuador": "Ecuador", "Ivory Coast": "Costa de Marfil", "Côte d'Ivoire": "Costa de Marfil",
+    "Curacao": "Curazao", "Curaçao": "Curazao", "Netherlands": "Países Bajos",
+    "Japan": "Japón", "Sweden": "Suecia", "Tunisia": "Túnez", "Belgium": "Bélgica",
+    "Egypt": "Egipto", "Iran": "Irán", "New Zealand": "Nueva Zelanda",
+    "Spain": "España", "Cape Verde": "Cabo Verde", "Saudi Arabia": "Arabia Saudita",
+    "Uruguay": "Uruguay", "France": "Francia", "Senegal": "Senegal",
+    "Iraq": "Irak", "Norway": "Noruega", "Argentina": "Argentina",
+    "Algeria": "Argelia", "Austria": "Austria", "Jordan": "Jordania",
+    "Portugal": "Portugal", "DR Congo": "RD Congo", "Congo DR": "RD Congo",
+    "Uzbekistan": "Uzbekistán", "Colombia": "Colombia", "England": "Inglaterra",
+    "Croatia": "Croacia", "Ghana": "Ghana", "Panama": "Panamá"
+}
+
 def actualizar_marcadores():
-    """Consulta API-Football y actualiza los marcadores en la BD local."""
+    """Consulta la API del Mundial 2026 (worldcup26.ir) y sincroniza los partidos."""
     with app.app_context():
-        api_key = os.environ.get('API_FOOTBALL_KEY')
-        if not api_key or api_key == 'tu_api_key_aqui':
-            print("Esperando clave API válida en .env. Modo simulación MVP activado.")
-            # Finalizar los partidos que ya pasaron automáticamente
-            ahora = datetime.utcnow() - timedelta(hours=4)
-            partidos_pasados = Partido.query.filter(Partido.estado != 'finished').all()
-            for p in partidos_pasados:
-                # Asumimos que un partido dura aprox 2 horas. Si ya pasó ese tiempo, lo finalizamos.
-                if p.fecha + timedelta(hours=2) <= ahora:
-                    # Dejamos los goles intactos (0-0 por defecto, o los que el Admin haya puesto manualmente)
-                    p.estado = 'finished'
-                    print(f"Partido finalizado automáticamente por tiempo: {p.equipo_a} {p.goles_a} - {p.goles_b} {p.equipo_b}")
-            db.session.commit()
-            return
-            
-        headers = {
-            'x-rapidapi-host': 'v3.football.api-sports.io',
-            'x-rapidapi-key': api_key
-        }
-        
+        ahora = datetime.utcnow() - timedelta(hours=4)
+        timestamp = ahora.strftime('%H:%M:%S')
+
         try:
-            response = requests.get('https://v3.football.api-sports.io/fixtures?live=all', headers=headers)
+            print(f"[{timestamp}] Consultando API Mundial 2026 (worldcup26.ir)...")
+            # 1. Petición HTTP Pública a la API
+            response = requests.get(
+                'https://worldcup26.ir/get/games',
+                timeout=15
+            )
             response.raise_for_status()
             data = response.json()
-            
-            if 'response' in data:
-                estado_mapping = {
-                    'NS': 'scheduled', 'TBD': 'scheduled',
-                    '1H': 'live', '2H': 'live', 'HT': 'live', 'ET': 'live', 'P': 'live', 'LIVE': 'live',
-                    'FT': 'finished', 'AET': 'finished', 'PEN': 'finished'
-                }
 
-                for fixture in data['response']:
-                    home_team = fixture['teams']['home']['name']
-                    away_team = fixture['teams']['away']['name']
-                    goals_home = fixture['goals']['home']
-                    goals_away = fixture['goals']['away']
-                    status_short = fixture['fixture']['status']['short']
-                    
-                    nuevo_estado = estado_mapping.get(status_short, 'scheduled')
-                    
-                    partido = Partido.query.filter(
-                        ((Partido.equipo_a == home_team) & (Partido.equipo_b == away_team)) |
-                        ((Partido.equipo_a == away_team) & (Partido.equipo_b == home_team))
-                    ).first()
-                    
-                    if partido:
-                        if partido.equipo_a == home_team:
-                            partido.goles_a = goals_home if goals_home is not None else partido.goles_a
-                            partido.goles_b = goals_away if goals_away is not None else partido.goles_b
-                        else:
-                            partido.goles_a = goals_away if goals_away is not None else partido.goles_a
-                            partido.goles_b = goals_home if goals_home is not None else partido.goles_b
-                        
-                        partido.estado = nuevo_estado
+            fixtures = data.get('games', [])
+            print(f"  Partidos obtenidos: {len(fixtures)}")
+
+            cambios = False
+            for fixture in fixtures:
+                # Extraer nombres en inglés de la API
+                home_team_en = fixture.get('home_team_name_en')
+                away_team_en = fixture.get('away_team_name_en')
+
+                if not home_team_en or not away_team_en:
+                    continue  # Ignorar partidos eliminatorios por definir
+
+                # Diccionario de Traducción (Mapeo a Español)
+                home_team = TRADUCCION_EQUIPOS.get(home_team_en, home_team_en)
+                away_team = TRADUCCION_EQUIPOS.get(away_team_en, away_team_en)
+
+                # Extraer marcadores
+                g_h = fixture.get('home_score')
+                g_a = fixture.get('away_score')
                 
-                db.session.commit()
-                print("Marcadores actualizados correctamente desde la API.")
-        except Exception as e:
-            print(f"Error al actualizar marcadores desde la API: {e}")
+                try:
+                    goals_home = int(g_h) if str(g_h).isdigit() else None
+                    goals_away = int(g_a) if str(g_a).isdigit() else None
+                except ValueError:
+                    goals_home, goals_away = None, None
 
-# Ejecutar actualización cada 10 minutos si no estamos en Vercel
+                # Lógica de Estados (Punto 2)
+                time_elapsed = str(fixture.get('time_elapsed', '')).lower()
+                finished_flag = str(fixture.get('finished', 'FALSE')).upper()
+
+                if finished_flag == 'TRUE':
+                    nuevo_estado = 'finished'
+                elif time_elapsed != 'notstarted' and finished_flag == 'FALSE':
+                    nuevo_estado = 'live'
+                else:
+                    nuevo_estado = 'scheduled'
+
+                # Buscar en la BD Local
+                partido = Partido.query.filter(
+                    ((Partido.equipo_a == home_team) & (Partido.equipo_b == away_team)) |
+                    ((Partido.equipo_a == away_team) & (Partido.equipo_b == home_team))
+                ).first()
+
+                if partido:
+                    estado_anterior = partido.estado
+                    
+                    # Asignar los goles extraídos
+                    if partido.equipo_a == home_team:
+                        if goals_home is not None: partido.goles_a = goals_home
+                        if goals_away is not None: partido.goles_b = goals_away
+                    else:
+                        if goals_away is not None: partido.goles_a = goals_away
+                        if goals_home is not None: partido.goles_b = goals_home
+
+                    partido.estado = nuevo_estado
+                    cambios = True
+
+                    # Imprimir solo cuando el estado cambia para evitar spam
+                    if estado_anterior != nuevo_estado:
+                        print(f"  [ESTADO] {partido.equipo_a} vs {partido.equipo_b}: "
+                              f"{estado_anterior} -> {nuevo_estado} "
+                              f"| {partido.goles_a}-{partido.goles_b}")
+
+            if cambios:
+                db.session.commit()
+                print("  Sincronización de BD exitosa.")
+
+            # 4. Resiliencia: Fallback de seguridad por si la API falla en marcar 'finished'
+            partidos_sin_finalizar = Partido.query.filter(Partido.estado != 'finished').all()
+            for p in partidos_sin_finalizar:
+                if p.fecha + timedelta(hours=2, minutes=30) <= ahora:
+                    p.estado = 'finished'
+                    db.session.commit()
+                    print(f"  [FALLBACK] {p.equipo_a} vs {p.equipo_b} finalizado por tiempo.")
+
+        except Exception as e:
+            # Captura general de errores de red o parsing (Punto 4)
+            print(f"[{timestamp}] ERROR Crítico en la actualización API Externa: {e}")
+
+# Ejecutar actualización cada 10 minutos si no estamos en Vercel (plan gratuito API-Football: 100 llamadas/día)
 if not IS_VERCEL:
     scheduler.add_job(func=actualizar_marcadores, trigger="interval", minutes=10, id='actualizar_marcadores_job')
 
