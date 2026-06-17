@@ -33,8 +33,11 @@
         <ul style="color: var(--text-dim); font-size: 0.9rem; margin: 0; padding-left: 1.25rem; line-height: 1.6;">
             <li><strong>Resultado Exacto:</strong> 5 Puntos (Le pegas al ganador y al marcador exacto)</li>
             <li><strong>Diferencia:</strong> 3 Puntos (Aciertas el ganador, pero no el marcador exacto)</li>
-            <li style="margin-top: 0.5rem; color: #ef4444;"><strong>🔒 Bloqueo de Votaciones:</strong> Las votaciones se bloquearán automáticamente <strong>30 minutos antes</strong> de empezar el partido y no se podrán modificar después de ese tiempo, sin excepciones.</li>
         </ul>
+        <h3 style="margin-top: 1.25rem; margin-bottom: 0.75rem; color: #ef4444; font-size: 1.05rem; display: flex; align-items: center; gap: 0.5rem;">🔒 Bloqueo de Votaciones</h3>
+        <p style="color: var(--text-dim); font-size: 0.9rem; line-height: 1.5; margin: 0;">
+            Las votaciones se bloquearán automáticamente <strong>30 minutos antes</strong> de empezar el partido y no se podrán modificar después de ese tiempo, sin excepciones.
+        </p>
         <div style="margin-top: 1rem; text-align: center;">
             <a href="{{ url_for('static', filename='docs/reglas.pdf') }}" target="_blank" download style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: linear-gradient(135deg, var(--accent-color), #4fd1c5); color: var(--primary-bg); font-weight: 700; font-size: 0.9rem; border-radius: 8px; text-decoration: none; transition: all 0.3s; box-shadow: 0 2px 10px rgba(120, 222, 212, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(120,222,212,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(120,222,212,0.3)'">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
