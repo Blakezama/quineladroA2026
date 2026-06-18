@@ -372,8 +372,45 @@ def inicio():
 
 @app.route('/grupos')
 def grupos():
-    """Muestra las tablas de posiciones de los grupos."""
-    return render_template('grupos.html')
+    """Muestra las tablas de posiciones de los grupos con puntos dinámicos."""
+    import copy
+    grupos_data = copy.deepcopy(MUNDIAL_DATA['Grupos'])
+    
+    # Inicializar campos para el desempate (goal difference, goals for)
+    for g, equipos in grupos_data.items():
+        for eq in equipos:
+            eq['gd'] = 0
+            eq['gf'] = 0
+            
+    partidos_grupos = Partido.query.filter_by(fase='Fase de Grupos').all()
+    
+    for p in partidos_grupos:
+        if p.estado in ['live', 'finished'] and p.goles_a is not None and p.goles_b is not None:
+            if p.grupo in grupos_data:
+                equipo_a_dict = next((e for e in grupos_data[p.grupo] if e['nombre'] == p.equipo_a), None)
+                equipo_b_dict = next((e for e in grupos_data[p.grupo] if e['nombre'] == p.equipo_b), None)
+                
+                if equipo_a_dict and equipo_b_dict:
+                    equipo_a_dict['pj'] += 1
+                    equipo_b_dict['pj'] += 1
+                    equipo_a_dict['gf'] += p.goles_a
+                    equipo_b_dict['gf'] += p.goles_b
+                    equipo_a_dict['gd'] += (p.goles_a - p.goles_b)
+                    equipo_b_dict['gd'] += (p.goles_b - p.goles_a)
+                    
+                    if p.goles_a > p.goles_b:
+                        equipo_a_dict['pts'] += 3
+                    elif p.goles_b > p.goles_a:
+                        equipo_b_dict['pts'] += 3
+                    else:
+                        equipo_a_dict['pts'] += 1
+                        equipo_b_dict['pts'] += 1
+                        
+    # Ordenar los equipos: puntos (desc), diferencia de goles (desc), goles a favor (desc)
+    for grupo_id, equipos in grupos_data.items():
+        equipos.sort(key=lambda x: (x['pts'], x['gd'], x['gf']), reverse=True)
+        
+    return render_template('grupos.html', grupos_data=grupos_data)
 
 
 

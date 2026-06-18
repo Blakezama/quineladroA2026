@@ -9,7 +9,7 @@
 </div>
 
 <div class="groups-grid">
-    {% for grupo_id, equipos in MUNDIAL_DATA.Grupos.items() %}
+    {% for grupo_id, equipos in grupos_data.items() %}
     <div class="card glass-card" style="padding: 1.5rem;">
         <h2 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
             <span style="background: var(--accent-color); color: var(--primary-bg); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 1rem;">GRUPO {{ grupo_id }}</span>
