@@ -2,14 +2,7 @@
 
 {% block title %}Inicio - Quiniela Mundial 2026{% endblock %}
 
-{% block nav_dropdown_extra %}
-    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 1.5rem;"></div>
-    <span style="display: block; padding: 0.2rem 1.5rem; color: var(--accent-color); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Fases del Torneo</span>
-    <a href="#" class="menu-tab active" data-target="tab-partidos">⚽ Partidos</a>
-    <a href="#" class="menu-tab" data-target="tab-posiciones">📊 Posiciones</a>
-    <a href="#" class="menu-tab" data-target="tab-fase-final">🏆 Fase Final</a>
-    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 1.5rem;"></div>
-{% endblock %}
+
 
 {% block content %}
 <!-- ===================================== -->
@@ -653,21 +646,41 @@
 
         tabs.forEach(tab => {
             tab.addEventListener('click', (e) => {
-                e.preventDefault();
-                // Eliminar active de todas las pestañas y contenidos
-                tabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
+                // Si estamos en la misma página (es decir, los tabContents existen aquí)
+                if (tabContents.length > 0) {
+                    e.preventDefault();
+                    // Eliminar active de todas las pestañas y contenidos
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
 
-                // Activar pestaña clickeada y su contenido
-                tab.classList.add('active');
-                const targetId = tab.getAttribute('data-target');
-                document.getElementById(targetId).classList.add('active');
-                
-                // Cerrar el dropdown al seleccionar una tab
-                const navDropdown = document.getElementById('navDropdown');
-                if (navDropdown) navDropdown.classList.remove('show');
+                    // Activar pestaña clickeada y su contenido
+                    tab.classList.add('active');
+                    const targetId = tab.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+                    
+                    // Actualizar la URL sin recargar la página
+                    window.history.replaceState(null, '', '?tab=' + targetId);
+                    
+                    // Cerrar el dropdown al seleccionar una tab
+                    const navDropdown = document.getElementById('navDropdown');
+                    if (navDropdown) navDropdown.classList.remove('show');
+                }
             });
         });
+
+        // Al cargar la página, revisar si hay un tab en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab');
+        if (tabParam && document.getElementById(tabParam)) {
+            const targetTab = document.querySelector(`.menu-tab[data-target="${tabParam}"]`);
+            if (targetTab) {
+                // Simulamos el comportamiento del tab correspondiente
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                targetTab.classList.add('active');
+                document.getElementById(tabParam).classList.add('active');
+            }
+        }
 
         // --- LOGICA DE PARTIDOS ---
         let gruposSeleccionados = [];

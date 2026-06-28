@@ -1551,7 +1551,12 @@
                 </svg>
             </button>
             <nav class="nav-dropdown" id="navDropdown">
-                {% block nav_dropdown_extra %}{% endblock %}
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 1.5rem;"></div>
+                <span style="display: block; padding: 0.2rem 1.5rem; color: var(--accent-color); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Fases del Torneo</span>
+                <a href="{{ url_for('inicio') }}?tab=tab-partidos" class="menu-tab" data-target="tab-partidos">⚽ Partidos</a>
+                <a href="{{ url_for('inicio') }}?tab=tab-posiciones" class="menu-tab" data-target="tab-posiciones">📊 Posiciones</a>
+                <a href="{{ url_for('inicio') }}?tab=tab-fase-final" class="menu-tab" data-target="tab-fase-final">🏆 Fase Final</a>
+                <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 0.5rem 1.5rem;"></div>
                 <a href="{{ url_for('inicio') }}">🏠 Inicio</a>
                 <a href="{{ url_for('mis_predicciones') }}">📊 Predicciones</a>
                 <a href="{{ url_for('ranking') }}">🏅 Ranking Global</a>
